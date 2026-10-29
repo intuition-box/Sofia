@@ -427,6 +427,7 @@
 .mk-season-links {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
 }
 .mk-season-link {
   display: inline-flex;

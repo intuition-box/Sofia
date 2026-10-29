@@ -1,0 +1,70 @@
+# Sofia write-relayer
+
+Sponsored writes: users who signed in with **email or Google** (Privy
+embedded wallet, no TRUST, no gas) get free Recommends. Sofia's treasury
+account sends them through `SofiaFeeProxy` with `receiver` = the user's
+wallet — every position belongs to the user and can be withdrawn.
+
+Plan and decisions: `docs/plans/SPONSORED_WRITES_PLAN.md` (local).
+
+## Endpoints
+
+```
+GET  /health                          -> { ok, relayer }
+GET  /sponsor/quota        (Privy)    -> { eligible, left, used, limits, paused } | { eligible: false, reason }
+POST /sponsor/recommend    (Privy)    { pages: [{ objectId, tags? }] }
+                                      -> { txHashes, recommended, tagged, left, partial }
+```
+
+`Authorization: Bearer <Privy access token>` — the explorer's
+`getAccessToken()`.
+
+## Rules
+
+- Eligible: a Privy account with a verified **email or Google** login AND a
+  Privy **embedded wallet** (it receives the positions). Accounts with only an
+  external wallet are not sponsored.
+- Per request: ≤ 5 pages, ≤ 2 tags per page. Pages must be atoms the indexer
+  knows; tags must be existing taxonomy atoms (v1 mints none).
+- Per account: `SPONSOR_QUOTA_MONTHLY` (20) and `SPONSOR_QUOTA_DAILY` (5)
+  Recommends. Tags don't count against the quota, only against the budget.
+- Relayer-wide: `SPONSOR_BUDGET_MONTHLY_TRUST` (500) — a hard stop. Each
+  request reserves 0.25 TRUST per triple before sending, then records the
+  real cost (value + gas).
+- Each Recommend / tag deposits `SPONSOR_DEPOSIT_TRUST` (0.01, the protocol
+  minimum) on the user's behalf: Recommend on curve 2 (page market), tags on
+  curve 1.
+- Sends are serialized (one nonce stream) and chunked under the chain's ~32M
+  gas-per-tx cap (35 creations / 80 deposits per tx).
+
+## Env
+
+| Var                                             | Default                 |                                            |
+| ----------------------------------------------- | ----------------------- | ------------------------------------------ |
+| `DATABASE_URL`                                  | —                       | Postgres (Neon) — its own database         |
+| `PRIVY_APP_ID`, `PRIVY_APP_SECRET`              | —                       | the **explorer's** Privy app               |
+| `RELAYER_PRIVATE_KEY`                           | —                       | treasury hot key — keep its balance small  |
+| `INTUITION_RPC_URL`                             | public RPC              | the rpc-proxy `/rpc` in prod               |
+| `RPC_PROXY_SERVER_KEY`                          | —                       | sent as `x-rpc-proxy-key` to the rpc-proxy |
+| `INTUITION_GRAPHQL_URL`                         | mainnet indexer         |                                            |
+| `SPONSOR_QUOTA_MONTHLY` / `SPONSOR_QUOTA_DAILY` | 20 / 5                  |                                            |
+| `SPONSOR_BUDGET_MONTHLY_TRUST`                  | 500                     |                                            |
+| `SPONSOR_DEPOSIT_TRUST`                         | 0.01                    |                                            |
+| `SPONSOR_DRY_RUN`                               | —                       | `1`: simulate every tx, send nothing       |
+| `CORS_ORIGINS`                                  | `http://localhost:5173` | CSV                                        |
+| `PORT`                                          | 8792                    |                                            |
+
+## Local dev
+
+```bash
+cd services/write-relayer
+cp .env.example .env      # fill it
+bunx prisma migrate deploy
+SPONSOR_DRY_RUN=1 bun run dev
+bun test
+```
+
+## Coolify
+
+Build context: **repo root**, Dockerfile `services/write-relayer/Dockerfile`,
+port 8792, health check `/health`. Migrations run at boot.

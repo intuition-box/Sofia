@@ -32,6 +32,8 @@ ARG VITE_OG_PROXY_URL=
 ARG VITE_MCP_TRUST_URL=
 ARG VITE_MASTRA_URL=
 ARG VITE_OAUTH_CALLBACK_URL=
+ARG VITE_INTUITION_RPC_URL=
+ARG VITE_WRITE_RELAYER_URL=
 
 ENV VITE_GRAPHQL_WS_URL=$VITE_GRAPHQL_WS_URL \
     VITE_PRIVY_APP_ID=$VITE_PRIVY_APP_ID \
@@ -40,7 +42,9 @@ ENV VITE_GRAPHQL_WS_URL=$VITE_GRAPHQL_WS_URL \
     VITE_OG_PROXY_URL=$VITE_OG_PROXY_URL \
     VITE_MCP_TRUST_URL=$VITE_MCP_TRUST_URL \
     VITE_MASTRA_URL=$VITE_MASTRA_URL \
-    VITE_OAUTH_CALLBACK_URL=$VITE_OAUTH_CALLBACK_URL
+    VITE_OAUTH_CALLBACK_URL=$VITE_OAUTH_CALLBACK_URL \
+    VITE_INTUITION_RPC_URL=$VITE_INTUITION_RPC_URL \
+    VITE_WRITE_RELAYER_URL=$VITE_WRITE_RELAYER_URL
 
 # Workspace manifests — bun.lock pins every workspace, so every package.json
 # must be present before --frozen-lockfile. `--parents` keeps the directory
@@ -55,6 +59,7 @@ COPY packages/graphql/ ./packages/graphql/
 COPY packages/design-system/ ./packages/design-system/
 COPY packages/taxonomy/ ./packages/taxonomy/
 COPY packages/quests/ ./packages/quests/
+COPY packages/reputation/ ./packages/reputation/
 COPY apps/explorer/ ./apps/explorer/
 
 # Vite emits to apps/explorer/dist/. The `prebuild` hook runs the

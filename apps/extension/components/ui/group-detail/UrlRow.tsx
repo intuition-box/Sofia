@@ -19,118 +19,41 @@ import {
   getEffectiveCertStatus,
   getFaviconUrl
 } from "~/lib/utils"
-import {
-  CERTIFICATION_LIST,
-  INTENTION_CONFIG,
-  INTENTION_ITEMS,
-  TRUST_ITEMS,
-  type IntentionType
-} from "~/types/intentionCategories"
+import { CERTIFICATION_LIST } from "~/types/intentionCategories"
 import type { GroupUrlRecord } from "~types/database"
 
-import type { UrlCertificationStatus } from "../../../hooks"
+import { usePageCartActions, type UrlCertificationStatus } from "../../../hooks"
 import { getDisplayTitle } from "../../../lib/utils/cleanTitle"
-import type { IntentionPurpose } from "../../../types/discovery"
-import { INTENTION_PREDICATES } from "../../../types/discovery"
-import { IntentionSelector } from "../IntentionSelector"
-import { InterestContextSelector } from "../InterestContextSelector"
+import PageTagsField from "../PageTagsField"
+
+import "../../styles/PageMarketPanel.css"
 
 export interface UrlRowProps {
   urlRecord: GroupUrlRecord
   onChainStatus?: UrlCertificationStatus
-  onAddToCart: (
-    intention: IntentionPurpose,
-    title?: string,
-    contexts?: string[]
-  ) => void
-  onAddTrustToCart: (
-    predicateName: string,
-    title?: string,
-    contexts?: string[]
-  ) => void
-  onRemoveFromCart: (predicateName: string) => void
   onOAuthCertify: (urlRecord: GroupUrlRecord) => void
   onRemove: () => void
   isProcessing: boolean
-  cartPredicates: string[]
   certifiedContexts?: string[]
-  onContextChange: (contexts: string[]) => void
 }
 
 // URL Row Component
 function UrlRow({
   urlRecord,
   onChainStatus,
-  onAddToCart,
-  onAddTrustToCart,
-  onRemoveFromCart,
   onOAuthCertify,
   onRemove,
   isProcessing,
-  cartPredicates,
-  certifiedContexts = [],
-  onContextChange
+  certifiedContexts = []
 }: UrlRowProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [selectedContexts, setSelectedContexts] = useState<string[]>([])
-  // Single active intention picked in the dropdown (null = placeholder).
-  const [selectedIntention, setSelectedIntention] =
-    useState<IntentionType | null>(null)
-
-  // Resolve an intention type to its on-chain predicate (trust verb or
-  // "visits for …" purpose) so we can add/remove the matching cart item.
-  const predicateForType = (type: IntentionType): string | null => {
-    const cfg = INTENTION_CONFIG[type]
-    if (cfg.intentionPurpose) return INTENTION_PREDICATES[cfg.intentionPurpose]
-    return cfg.predicateLabel
-  }
-  const addIntentionToCart = (type: IntentionType) => {
-    const cfg = INTENTION_CONFIG[type]
-    if (cfg.intentionPurpose) {
-      onAddToCart(cfg.intentionPurpose, urlRecord.title, selectedContexts)
-    } else if (cfg.predicateLabel) {
-      onAddTrustToCart(cfg.predicateLabel, urlRecord.title, selectedContexts)
-    }
-  }
-  const handleSelectIntention = (type: IntentionType) => {
-    if (type === selectedIntention) return
-    if (selectedIntention) {
-      const prev = predicateForType(selectedIntention)
-      if (prev) onRemoveFromCart(prev)
-    }
-    addIntentionToCart(type)
-    setSelectedIntention(type)
-  }
-  const handleClearIntention = () => {
-    if (selectedIntention) {
-      const prev = predicateForType(selectedIntention)
-      if (prev) onRemoveFromCart(prev)
-    }
-    setSelectedIntention(null)
-  }
-
-  const handleSelectContexts = (slugs: string[]) => {
-    setSelectedContexts(slugs)
-    onContextChange(slugs)
-
-    // When picking contexts on a URL that is already certified, auto-queue
-    // a deposit-with-context cart item for each certified predicate that is
-    // not already in the cart.
-    if (slugs.length === 0) return
-    for (const certLabel of allCertLabels) {
-      const intentionItem = INTENTION_ITEMS.find((i) => i.type === certLabel)
-      if (intentionItem) {
-        const predicateName = INTENTION_PREDICATES[intentionItem.key]
-        if (!cartPredicates.includes(predicateName)) {
-          onAddToCart(intentionItem.key, urlRecord.title, slugs)
-        }
-        continue
-      }
-      const trustItem = TRUST_ITEMS.find((t) => t.type === certLabel)
-      if (trustItem && !cartPredicates.includes(trustItem.predicateLabel)) {
-        onAddTrustToCart(trustItem.predicateLabel, urlRecord.title, slugs)
-      }
-    }
+  // Same market actions as the Page tab: Recommend / Distrust + tags
+  const page = usePageCartActions(urlRecord.url, urlRecord.title || null)
+  let host = ""
+  try {
+    host = new URL(urlRecord.url).hostname
+  } catch {
+    // not a URL
   }
 
   // Use Pipeline 2 data with Pipeline 1 fallback for trust/distrust
@@ -274,22 +197,31 @@ function UrlRow({
               {urlRecord.oauthPredicate}
             </button>
           )}
-          {/* Two matching dropdowns side by side — same layout as
-              PageBlockchainCard's actions panel. */}
-          <div className="cert-actions-row">
-            <IntentionSelector
-              selected={selectedIntention}
-              onSelect={handleSelectIntention}
-              onClear={handleClearIntention}
-              disabled={isProcessing}
-            />
-            <InterestContextSelector
-              selectedContexts={selectedContexts}
-              onChange={handleSelectContexts}
-              disabled={isProcessing}
-              certifiedContexts={certifiedContexts}
-            />
+          <div className="pm-actions">
+            <button
+              type="button"
+              className={`pm-btn pm-btn--support${page.recommendItem ? " is-queued" : ""}`}
+              aria-pressed={!!page.recommendItem}
+              onClick={() => void page.toggleRecommend()}
+              disabled={isProcessing}>
+              {page.recommendItem ? "✓ Recommend" : "Recommend"}
+            </button>
+            <button
+              type="button"
+              className={`pm-btn pm-btn--oppose${page.distrustItem ? " is-queued" : ""}`}
+              aria-pressed={!!page.distrustItem}
+              onClick={() => void page.toggleDistrust()}
+              disabled={isProcessing}>
+              {page.distrustItem ? "✓ Distrust" : "Distrust"}
+            </button>
           </div>
+          <PageTagsField
+            intentions={page.intentions}
+            onToggleIntention={page.toggleIntention}
+            contexts={page.topics}
+            onChangeContexts={page.setTopics}
+            hints={[urlRecord.title, host].filter(Boolean).join(" ")}
+          />
         </div>
       )}
     </div>

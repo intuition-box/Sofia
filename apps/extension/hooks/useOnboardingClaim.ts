@@ -2,6 +2,7 @@ import { useState, useCallback } from "react"
 import { useIntentionCertify } from "./useIntentionCertify"
 import { useWalletFromStorage } from "./useWalletFromStorage"
 import { createHookLogger } from "~/lib/utils"
+import { PAGE_MARKET_PREDICATE } from "~/lib/config/predicateConstants"
 
 const logger = createHookLogger("useOnboardingClaim")
 
@@ -47,7 +48,7 @@ export const useOnboardingClaim = (
       logger.info("Submitting first claim", { url, weight: weight.toString() })
       await certifyWithCustomPredicate(
         url,
-        "trusts",
+        PAGE_MARKET_PREDICATE,
         undefined,
         "Sofia",
         weight

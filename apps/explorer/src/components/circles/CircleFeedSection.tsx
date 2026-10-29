@@ -17,11 +17,13 @@ import { useCircleFeed } from '@/hooks/useCircleFeed'
 import { useEnsNames } from '@/hooks/useEnsNames'
 import { useLinkedWallets } from '@/hooks/useLinkedWallets'
 import { useCart } from '@/hooks/useCart'
-import type { CartItem } from '@/hooks/useCart'
 import { useUserPositionTermIds } from '@/hooks/useUserPositionTermIds'
-import { displayLabelToIntentionType } from '@/config/intentions'
+import {
+  displayLabelToIntentionType,
+  INTENTION_CONFIG,
+} from '@/config/intentions'
+import { pageVoteCartItem } from '@/services/pageMarketCartService'
 import type { CircleItem } from '@/services/circleService'
-import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { sortFeed, type FeedSortId } from '@/services/circleFeedSort'
 import { computeTopEngaged } from '@/services/circleStats'
 import type { TrustCircleAccount } from '@/services/trustCircleService'
@@ -107,41 +109,20 @@ export default function CircleFeedSection({
   // pushed yet (or for positions outside the top-500 cap).
   const livePositionTermIds = useUserPositionTermIds(addresses)
 
-  /**
-   * Like / dislike — stakes the cert's "in context of <topic>" nested
-   * triples (support → `termId`, oppose → `counterTermId`), one position per
-   * topic context, no verb picker / modal. A cert with no topic context has
-   * nothing to stake — the card disables its thumbs, so this is a no-op.
-   */
+  /** 👍 / 👎 — the page's one market: Recommend it, or oppose the claim */
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated) return
-      // Deduplicate by topicSlug: multiple cert triples on the same card
-      // (e.g. visits_for_work + visits_for_learning) each produce their own
-      // "in context of" triple for the same topic, but we only want ONE
-      // stake per topic — not one per intention.
-      const seenTopics = new Set<string>()
-      const contexts = item.contextTriples.filter((c) => {
-        const hasVault = side === 'support' ? !!c.termId : !!c.counterTermId
-        if (!hasVault || seenTopics.has(c.topicSlug)) return false
-        seenTopics.add(c.topicSlug)
-        return true
-      })
-      if (contexts.length === 0) return
-      const newItems: CartItem[] = contexts.map((c) => {
-        const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
-        const termId = side === 'support' ? c.termId : c.counterTermId
-        return {
-          id: `${termId}-${side}`,
-          side,
-          termId,
-          intention: meta?.label ?? c.topicSlug,
+      const row = pageVoteCartItem(
+        side,
+        {
+          objectId: item.objectTermId,
           title: item.title,
           favicon: item.favicon,
-          intentionColor: meta?.color ?? '#888',
-        }
-      })
-      cart.addItems(newItems)
+        },
+        !!item.intentionVaults[INTENTION_CONFIG.trusted.label]?.termId,
+      )
+      if (row) cart.addItem(row)
     },
     [authenticated, cart],
   )

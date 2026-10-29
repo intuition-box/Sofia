@@ -1,47 +1,34 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { intentionTagBySlug, isIntentionTagSlug } from "@0xsofia/taxonomy"
+import { ChevronDown } from "lucide-react"
+
 import {
   getCertificationForUrl,
-  useCart,
   useCredibilityAnalysis,
   useFavicon,
   usePageBlockchainData,
+  usePageCartActions,
+  usePageHints,
+  usePageMarket,
   usePagePositions,
+  useRedeemTriple,
   useUserCertifications,
   useWalletFromStorage
 } from "~/hooks"
 import { contextColor, contextLabel } from "~/lib/config/contextDisplay"
-import { getFaviconUrl, getTripleUrl } from "~/lib/utils"
-import type { IntentionPurpose } from "~/types/discovery"
-import { INTENTION_PREDICATES } from "~/types/discovery"
-import {
-  INTENTION_CONFIG,
-  predicateLabelToIntentionType,
-  type IntentionType
-} from "~/types/intentionCategories"
+import type { MyPosition } from "~/lib/services"
+import { getTripleUrl } from "~/lib/utils"
 
 import ExtendedMetricsPanel from "./blockchain/ExtendedMetricsPanel"
 import PageBlockchainHeader from "./blockchain/PageBlockchainHeader"
-import { CategorisationDropdown } from "./CategorisationDropdown"
+import PageMarketPanel from "./PageMarketPanel"
+import PageTagsField from "./PageTagsField"
 import PagePositionBoard from "./PagePositionBoard"
 import ShareCertificationButton from "./ShareCertificationButton"
 import { PageStatsSkeleton } from "./Skeleton"
 
 import "../styles/PageBlockchainCard.css"
-
-// IntentionPurpose (e.g. "for_work") → IntentionType (e.g. "work"), so the
-// verbs queued in the cart (stored as purposes) map back to the dropdown's
-// type-keyed selection.
-const PURPOSE_TO_TYPE = Object.fromEntries(
-  (
-    Object.entries(INTENTION_CONFIG) as [
-      IntentionType,
-      { intentionPurpose: IntentionPurpose | null }
-    ][]
-  )
-    .filter(([, v]) => v.intentionPurpose)
-    .map(([type, v]) => [v.intentionPurpose as string, type])
-) as Record<string, IntentionType>
 
 // Trust-circle highlighting belongs to Circles (hidden) — stable empty list
 const NO_TRUST_CIRCLE: string[] = []
@@ -87,158 +74,58 @@ const PageBlockchainCard = () => {
     NO_TRUST_CIRCLE
   )
 
-  const {
-    certifiedIntentions,
-    alreadyTrusted,
-    alreadyDistrusted,
-    certEntry,
-    certifiedContexts
-  } = useMemo(() => {
-    if (!currentUrl || certifications.size === 0)
-      return {
-        certifiedIntentions: [] as IntentionPurpose[],
-        alreadyTrusted: false,
-        alreadyDistrusted: false,
-        certEntry: null,
-        certifiedContexts: [] as string[]
-      }
-    const entry = getCertificationForUrl(certifications, currentUrl)
-    return {
-      certifiedIntentions: entry?.intentions ?? [],
-      alreadyTrusted: entry?.trustPredicates?.includes("trusts") ?? false,
-      alreadyDistrusted: entry?.trustPredicates?.includes("distrust") ?? false,
-      certEntry: entry,
-      certifiedContexts: entry?.interestContexts ?? []
-    }
-  }, [currentUrl, certifications])
+  const certEntry = useMemo(
+    () =>
+      currentUrl && certifications.size > 0
+        ? getCertificationForUrl(certifications, currentUrl)
+        : null,
+    [currentUrl, certifications]
+  )
+
+  // The page's market (Recommend / Distrust, momentum, rank, P&L, tags)
+  const { market, loading: marketLoading } = usePageMarket(
+    pageAtomIds,
+    walletAddress
+  )
+  const { redeemAllPositions, loading: exiting } = useRedeemTriple()
+  const handleExit = useCallback(
+    async (position: MyPosition) => {
+      await redeemAllPositions(position.termIds)
+    },
+    [redeemAllPositions]
+  )
 
   // Bug C: fallback — si pageAtomIds vide (stale), vérifier le cache certifications
   const effectiveUserHasCertified = userHasCertified || !!certEntry
 
-  // Context picker is always rendered: it draws from the 14 topics in
-  // topicConfig, not the user's staked positions. Topic positions are
-  // no longer needed here.
-  const [selectedContexts, setSelectedContexts] = useState<string[]>([])
-
-  // Cart
-  const cart = useCart()
+  // Cart: what's queued for this page on its market
   const [isBursting, setIsBursting] = useState(false)
+  const burst = useCallback(() => setIsBursting(true), [])
+  const {
+    cartFull,
+    recommendItem,
+    distrustItem,
+    pageItems: cartItemsForPage,
+    toggleRecommend,
+    toggleDistrust,
+    toggleIntention,
+    intentions,
+    topics: pageTopicTags,
+    setTopics
+  } = usePageCartActions(currentUrl, pageTitle, burst)
 
-  const cartIntentionsForPage = useMemo(() => {
-    if (!currentUrl) return [] as IntentionPurpose[]
-    return cart.items
-      .filter((item) => item.url === currentUrl && item.intention)
-      .map((item) => item.intention) as IntentionPurpose[]
-  }, [cart.items, currentUrl])
-
-  const trustInCart = useMemo(() => {
-    if (!currentUrl) return false
-    return cart.items.some(
-      (item) => item.url === currentUrl && item.predicateName === "trusts"
-    )
-  }, [cart.items, currentUrl])
-
-  const distrustInCart = useMemo(() => {
-    if (!currentUrl) return false
-    return cart.items.some(
-      (item) => item.url === currentUrl && item.predicateName === "distrust"
-    )
-  }, [cart.items, currentUrl])
-
-  // Cart items for the current page (used for the live sentence + validate)
-  const cartItemsForPage = useMemo(() => {
-    if (!currentUrl) return [] as typeof cart.items
-    return cart.items.filter((item) => item.url === currentUrl)
-  }, [cart.items, currentUrl])
-
-  const handleAddToCart = useCallback(
-    async (intention: IntentionPurpose) => {
-      if (!currentUrl) return
-      const predicateName = INTENTION_PREDICATES[intention]
-      // Toggle: if already queued, remove instead of re-adding
-      const existing = cart.items.find(
-        (item) =>
-          item.url === currentUrl && item.predicateName === predicateName
-      )
-      if (existing) {
-        await cart.removeFromCart(existing.id)
-        return
-      }
-      const favicon = getFaviconUrl(currentUrl, 128)
-      const added = await cart.addToCart(
-        currentUrl,
-        pageTitle,
-        predicateName,
-        intention,
-        favicon,
-        selectedContexts
-      )
-      if (added) {
-        setIsBursting(true)
-      }
-    },
-    [currentUrl, pageTitle, cart, selectedContexts]
-  )
-
-  const handleAddTrustToCart = useCallback(
-    async (predicate: "trusts" | "distrust") => {
-      if (!currentUrl) return
-      // Toggle: if already queued, remove instead of re-adding
-      const existing = cart.items.find(
-        (item) => item.url === currentUrl && item.predicateName === predicate
-      )
-      if (existing) {
-        await cart.removeFromCart(existing.id)
-        return
-      }
-      const favicon = getFaviconUrl(currentUrl, 128)
-      const added = await cart.addToCart(
-        currentUrl,
-        pageTitle,
-        predicate,
-        null,
-        favicon,
-        selectedContexts
-      )
-      if (added) {
-        setIsBursting(true)
-      }
-    },
-    [currentUrl, pageTitle, cart, selectedContexts]
-  )
-
-  // Toggle the cart item for an intention type (trust verb or purpose).
-  // Both underlying handlers are toggles: calling them adds when absent,
-  // removes when already queued.
-  const toggleIntentionInCart = useCallback(
-    (type: IntentionType) => {
-      const cfg = INTENTION_CONFIG[type]
-      if (cfg.intentionPurpose) {
-        handleAddToCart(cfg.intentionPurpose as IntentionPurpose)
-      } else if (
-        cfg.predicateLabel === "trusts" ||
-        cfg.predicateLabel === "distrust"
-      ) {
-        handleAddTrustToCart(cfg.predicateLabel)
-      }
-    },
-    [handleAddToCart, handleAddTrustToCart]
-  )
-
-  // Verbs currently selected = what's queued in the cart for this page. The
-  // combobox is multi-select, so we derive the set from the cart (single
-  // source of truth) rather than tracking a separate active pick. Toggling a
-  // verb just adds/removes its cart item.
-  const selectedIntentionTypes = useMemo<IntentionType[]>(() => {
-    const types: IntentionType[] = []
-    if (trustInCart) types.push("trusted")
-    if (distrustInCart) types.push("distrusted")
-    for (const purpose of cartIntentionsForPage) {
-      const type = PURPOSE_TO_TYPE[purpose]
-      if (type) types.push(type)
+  // Page metadata for "Suggested from this page" (title + host as fallback)
+  const tabHints = usePageHints(currentUrl)
+  const pageHints = useMemo(() => {
+    if (tabHints) return tabHints
+    let host = ""
+    try {
+      host = currentUrl ? new URL(currentUrl).hostname : ""
+    } catch {
+      // not a URL
     }
-    return types
-  }, [trustInCart, distrustInCart, cartIntentionsForPage])
+    return [pageTitle, host].filter(Boolean).join(" ")
+  }, [tabHints, pageTitle, currentUrl])
 
   // Reset cart-burst animation flag once the animation has played
   useEffect(() => {
@@ -247,8 +134,10 @@ const PageBlockchainCard = () => {
     return () => clearTimeout(t)
   }, [isBursting])
 
-  // UI toggle
+  // UI toggles
   const [showExtendedMetrics, setShowExtendedMetrics] = useState(true)
+  // Tags panel: collapsed = tag field + Save; expanded adds Why? + preview
+  const [tagsExpanded, setTagsExpanded] = useState(false)
 
   const isReady = status === "ready" || status === "refreshing"
   const isRefreshing = status === "refreshing"
@@ -305,198 +194,149 @@ const PageBlockchainCard = () => {
             />
           )}
 
+          {/* The page's market — Recommend / Distrust, value, your P&L */}
+          {!isRestricted && (
+            <PageMarketPanel
+              market={market}
+              loading={marketLoading}
+              recommendQueued={!!recommendItem}
+              distrustQueued={!!distrustItem}
+              cartFull={cartFull}
+              onRecommend={() => void toggleRecommend()}
+              onDistrust={() => void toggleDistrust()}
+              onExit={(position) => void handleExit(position)}
+              exiting={exiting}
+            />
+          )}
+
           {/* Actions panel — Intentions + Context grouped under one section */}
           {!isRestricted && (
             <div className="actions-panel">
-              <div className="actions-panel-title">Tags on this page</div>
+              <button
+                type="button"
+                className="actions-panel-title actions-panel-toggle"
+                aria-expanded={tagsExpanded}
+                onClick={() => setTagsExpanded((v) => !v)}>
+                Tags on this page
+                <ChevronDown
+                  size={14}
+                  className={`actions-panel-chevron${tagsExpanded ? " is-open" : ""}`}
+                  aria-hidden
+                />
+              </button>
               <div className="cert-section">
-                <CategorisationDropdown
-                  selectedIntentions={selectedIntentionTypes}
-                  onToggleIntention={toggleIntentionInCart}
-                  selectedContexts={selectedContexts}
-                  onChangeContexts={(slugs) => {
-                    setSelectedContexts(slugs)
-                    if (!currentUrl) return
-                    cart.updateContextForUrl(currentUrl, slugs)
-                    // Auto-queue deposit + context for already-certified
-                    // intentions / trust (slugs captured explicitly so we
-                    // don't race the setSelectedContexts closure).
-                    if (slugs.length === 0) return
-                    const favicon = getFaviconUrl(currentUrl, 128)
-                    for (const intention of certifiedIntentions) {
-                      if (cartIntentionsForPage.includes(intention)) continue
-                      cart.addToCart(
-                        currentUrl,
-                        pageTitle,
-                        INTENTION_PREDICATES[intention],
-                        intention,
-                        favicon,
-                        slugs
-                      )
-                    }
-                    if (alreadyTrusted && !trustInCart) {
-                      cart.addToCart(
-                        currentUrl,
-                        pageTitle,
-                        "trusts",
-                        null,
-                        favicon,
-                        slugs
-                      )
-                    }
-                    if (alreadyDistrusted && !distrustInCart) {
-                      cart.addToCart(
-                        currentUrl,
-                        pageTitle,
-                        "distrust",
-                        null,
-                        favicon,
-                        slugs
-                      )
-                    }
-                  }}
-                  certifiedContexts={certifiedContexts}
+                <PageTagsField
+                  intentions={intentions}
+                  onToggleIntention={toggleIntention}
+                  contexts={pageTopicTags}
+                  onChangeContexts={setTopics}
+                  hints={pageHints}
+                  showWhy={tagsExpanded}
                 />
               </div>
 
               {/* Live-built sentence — reflects what will be committed */}
               <div className="cert-section live-sentence-section">
+                {tagsExpanded && (
+                <>
                 <div className="cert-section-title">Preview</div>
                 <div className="live-sentence">
                   {cartItemsForPage.length === 0 ? (
                     <span className="live-sentence__placeholder">
-                      Pick an intention to start building your signal…
+                      Recommend the page, or add tags, to build your signal…
                     </span>
                   ) : (
                     (() => {
-                      const object =
-                        cartItemsForPage[0].pageTitle ||
-                        cartItemsForPage[0].normalizedUrl
-
-                      // Split predicates: "visits for X" → verb "visit" + tail X.
-                      // "trusts" / "distrust" → standalone colored verbs.
-                      const VERB_PREFIX = "visits for"
-                      const visitTails: { label: string; color: string }[] = []
-                      const trustVerbs: { label: string; color: string }[] = []
-                      const seen = new Set<string>()
-                      for (const item of cartItemsForPage) {
-                        if (seen.has(item.predicateName)) continue
-                        seen.add(item.predicateName)
-                        const type = predicateLabelToIntentionType(
-                          item.predicateName
-                        )
-                        if (item.predicateName.startsWith(`${VERB_PREFIX} `)) {
-                          const tail = item.predicateName.slice(
-                            VERB_PREFIX.length + 1
-                          )
-                          visitTails.push({
-                            label: tail,
-                            color: type
-                              ? INTENTION_CONFIG[type].color
-                              : "var(--ds-accent)"
-                          })
-                        } else {
-                          trustVerbs.push({
-                            label: item.predicateName,
-                            color: type
-                              ? INTENTION_CONFIG[type].color
-                              : "var(--ds-accent)"
-                          })
-                        }
-                      }
-
-                      // A context slug is a topic OR a category — resolve the
-                      // label/color either way (categories borrow the parent
-                      // topic's color).
-                      const contexts = Array.from(
+                      const first = cartItemsForPage[0]
+                      const object = first.pageTitle || first.normalizedUrl
+                      const tags = Array.from(
                         new Set(
-                          cartItemsForPage
-                            .flatMap(
-                              (i) =>
-                                i.interestContexts ??
-                                (i.interestContext ? [i.interestContext] : [])
-                            )
-                            .filter(
-                              (c): c is string => !!c && !!contextLabel(c)
-                            )
+                          cartItemsForPage.flatMap(
+                            (i) =>
+                              i.interestContexts ??
+                              (i.interestContext ? [i.interestContext] : [])
+                          )
                         )
-                      ).map((slug) => ({
-                        label: contextLabel(slug)!,
-                        color: contextColor(slug)
-                      }))
-
-                      const renderColored = (
-                        items: { label: string; color: string }[]
-                      ) =>
-                        items.map((it, idx) => (
-                          <span key={`${it.label}-${idx}`}>
+                      )
+                      const intentions = tags
+                        .filter(isIntentionTagSlug)
+                        .map((slug) => intentionTagBySlug(slug)!.key)
+                      // A context slug is a topic OR a category — resolve
+                      // the label/color either way.
+                      const topics = tags
+                        .filter((c) => !isIntentionTagSlug(c) && contextLabel(c))
+                        .map((slug) => ({
+                          label: contextLabel(slug)!,
+                          color: contextColor(slug)
+                        }))
+                      const join = (items: React.ReactNode[]) =>
+                        items.map((node, idx) => (
+                          <span key={idx}>
                             {idx > 0 && (
                               <span className="live-sentence__connector">
                                 {" "}
                                 and{" "}
                               </span>
                             )}
-                            <span
-                              className="live-sentence__token"
-                              style={{ color: it.color }}>
-                              {it.label}
-                            </span>
+                            {node}
                           </span>
                         ))
-
-                      // Verb cluster: "visit" (muted) + colored trust verbs.
-                      const verbNodes: React.ReactNode[] = []
-                      if (visitTails.length > 0) {
-                        verbNodes.push(
-                          <span key="v-visit" className="live-sentence__verb">
-                            visit
+                      const verbs: React.ReactNode[] = []
+                      if (recommendItem) {
+                        verbs.push(
+                          <span
+                            className="live-sentence__token"
+                            style={{ color: "#22C55E" }}>
+                            recommend
                           </span>
                         )
                       }
-                      trustVerbs.forEach((tv, idx) => {
-                        verbNodes.push(
+                      if (distrustItem) {
+                        verbs.push(
                           <span
-                            key={`v-trust-${idx}`}
                             className="live-sentence__token"
-                            style={{ color: tv.color }}>
-                            {tv.label}
+                            style={{ color: "#EF4444" }}>
+                            distrust
                           </span>
                         )
-                      })
-
+                      }
                       return (
                         <span className="live-sentence__line">
                           <span className="live-sentence__subject">I</span>{" "}
-                          {verbNodes.map((node, idx) => (
-                            <span key={`vn-${idx}`}>
-                              {idx > 0 && (
-                                <span className="live-sentence__connector">
-                                  {" "}
-                                  and{" "}
-                                </span>
-                              )}
-                              {node}
-                            </span>
-                          ))}{" "}
+                          {join(verbs)}{" "}
                           <span className="live-sentence__object">
                             {object}
                           </span>
-                          {visitTails.length > 0 && (
+                          {intentions.length > 0 && (
                             <>
                               {" "}
                               <span className="live-sentence__connector">
                                 for
                               </span>{" "}
-                              {renderColored(visitTails)}
+                              {join(
+                                intentions.map((key) => (
+                                  <span className="live-sentence__token">
+                                    {key}
+                                  </span>
+                                ))
+                              )}
                             </>
                           )}
-                          {contexts.length > 0 && (
+                          {topics.length > 0 && (
                             <>
                               {" "}
                               <span className="live-sentence__connector">
                                 in context of
                               </span>{" "}
-                              {renderColored(contexts)}
+                              {join(
+                                topics.map((t) => (
+                                  <span
+                                    className="live-sentence__token"
+                                    style={{ color: t.color }}>
+                                    {t.label}
+                                  </span>
+                                ))
+                              )}
                             </>
                           )}
                         </span>
@@ -504,6 +344,8 @@ const PageBlockchainCard = () => {
                     })()
                   )}
                 </div>
+                </>
+                )}
                 <button
                   type="button"
                   className="validate-btn"

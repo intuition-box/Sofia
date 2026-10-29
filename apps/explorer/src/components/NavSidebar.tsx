@@ -125,7 +125,7 @@ export function NavSidebar({
     // Market refocus order: Platforms, Trending, Positions, Explore, Season.
     { to: '/platforms', icon: LineChart, label: 'Platforms', public: false },
     { to: '/trending', icon: Flame, label: 'Trending', public: true },
-    { to: '/positions', icon: PieChart, label: 'Positions', public: true },
+    { to: '/positions', icon: PieChart, label: 'My positions', public: true },
     {
       to: '/explore',
       icon: Globe,

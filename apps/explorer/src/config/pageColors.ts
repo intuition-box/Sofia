@@ -26,7 +26,7 @@ export const PAGE_COLORS: Record<string, PageColorConfig> = {
   },
   '/positions': {
     color: '#A0C4FF',
-    title: 'Positions',
+    title: 'My positions',
     subtitle:
       'Track the value and change of every position you hold, and exit when you want.',
     glow: 'rgba(160,196,255,0.4)',

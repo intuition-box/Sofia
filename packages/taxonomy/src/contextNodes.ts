@@ -15,6 +15,7 @@ import {
   CATEGORY_ATOM_IDS,
 } from './atomIds'
 import { CATEGORY_TO_TOPIC, CATEGORY_BY_ID, TOPIC_BY_ID } from './taxonomy'
+import { intentionTagAtomRef, isIntentionTagSlug } from './intentionTags'
 
 export type ContextLevel = 'topic' | 'category'
 
@@ -93,6 +94,7 @@ export type ContextAtomRef =
  * `null` when the slug isn't part of the taxonomy at all.
  */
 export function contextAtomRefForSlug(slug: string): ContextAtomRef | null {
+  if (isIntentionTagSlug(slug)) return intentionTagAtomRef(slug)
   const cat = CATEGORY_BY_ID.get(slug)
   const label = cat?.label ?? TOPIC_BY_ID.get(slug)?.label
   if (!label) return null

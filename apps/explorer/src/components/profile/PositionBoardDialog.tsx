@@ -26,6 +26,10 @@ interface PositionBoardDialogProps {
   intention: string
   intentionColor: string
   walletAddress?: string
+  /** Bonding curve of the deposits — 2 for the page market */
+  curveId?: 1 | 2
+  /** One line under the title, e.g. how this market compares to the page */
+  context?: string
 }
 
 export default function PositionBoardDialog({
@@ -38,6 +42,8 @@ export default function PositionBoardDialog({
   intention,
   intentionColor,
   walletAddress,
+  curveId,
+  context,
 }: PositionBoardDialogProps) {
   // Prefetch data on mount — no need to wait for open
   const { positions: supportPositions, loading: supportPosLoading } =
@@ -88,6 +94,7 @@ export default function PositionBoardDialog({
       title,
       favicon,
       intentionColor,
+      curveId,
     }
     cart.addItem(item)
   }
@@ -124,6 +131,7 @@ export default function PositionBoardDialog({
             Position leaderboard for {title}
           </DialogDescription>
         </DialogHeader>
+        {context && <p className="pbd-context">{context}</p>}
 
         {isLoading ? (
           /* ── Skeleton ── */

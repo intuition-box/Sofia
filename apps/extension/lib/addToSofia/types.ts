@@ -53,7 +53,7 @@ export interface AddToCartMessage {
 export interface AddToCartResponse {
   ok: boolean
   /** Set when ok === false, to drive a precise toast. */
-  reason?: "no-wallet" | "duplicate" | "error"
+  reason?: "no-wallet" | "duplicate" | "full" | "error"
 }
 
 /** Ask the SW whether a wallet is connected (content script → background).

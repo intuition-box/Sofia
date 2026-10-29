@@ -1,3 +1,4 @@
+import './polyfills'
 import { createRoot } from 'react-dom/client'
 import { Providers } from './lib/providers'
 import App from './App'

@@ -10,22 +10,9 @@
  * created_at asc → index 0 is the first staker / Pioneer).
  */
 import { useClaimSupportersQuery } from '@0xsofia/graphql'
+import type { ClaimStaker, ClaimSupporters } from '@0xsofia/reputation'
 
-export interface ClaimStaker {
-  /** Staker wallet address. */
-  account: string
-  /** ISO timestamp of the position — the ordering key (asc = Pioneer first). */
-  createdAt: string
-  /** Raw shares (bigint string). Financial only — NOT used for reputation. */
-  shares: string
-}
-
-export interface ClaimSupporters {
-  /** Ordered support positions (index 0 = first staker / Pioneer). */
-  support: ClaimStaker[]
-  /** Ordered oppose positions (counter_term). */
-  oppose: ClaimStaker[]
-}
+export type { ClaimStaker, ClaimSupporters }
 
 // Chunk size for the `term_id _in` filter — keeps each request bounded.
 const BATCH = 50

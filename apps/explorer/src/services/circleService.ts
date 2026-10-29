@@ -4,24 +4,17 @@ import {
 } from '@0xsofia/graphql'
 import { getAddress } from 'viem'
 import { processEvents, enrichWithTopicContexts } from './feedProcessing'
+import { PAGE_CLAIM_PREDICATE_LABELS } from '@0xsofia/taxonomy'
 
 // Sofia's canonical certification predicate labels — matches
 // `CERT_PREDICATE_LABELS` in userOnChainProfileService so the circle
 // feed and the Echoes profile feed pull the same data shape.
-const CERT_PREDICATE_LABELS = [
-  'visits for work',
-  'visits for learning',
-  'visits for learning ', // legacy trailing-space variant
-  'visits for fun',
-  'visits for inspiration',
-  'visits for buying',
-  'visits for music',
-  'trusts',
-  'distrust',
-] as const
+const CERT_PREDICATE_LABELS = PAGE_CLAIM_PREDICATE_LABELS
 
 export interface CircleItem {
   id: string
+  /** The page atom term_id — its Recommend market is the 👍 / 👎 target */
+  objectTermId: string
   title: string
   url: string
   domain: string
@@ -51,12 +44,7 @@ export interface CircleItem {
   /** Precise CATEGORY slugs from category-level "in context of" tags — drives
    *  the category pills shown alongside the topic. */
   categorySlugs: string[]
-  /**
-   * Stakeable "in context of <topic>" nested triples — the like/dislike
-   * target. A like is a single click that stakes the topic context(s); no
-   * verb is picked (so multi-intention certs no longer need a modal). One
-   * entry per topic the cert is tagged with.
-   */
+  /** "in context of <topic>" nested triples on this cert — one per tag */
   contextTriples: {
     topicSlug: string
     /** Support side (a like). */

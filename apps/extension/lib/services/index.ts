@@ -8,7 +8,11 @@ export { BlockchainService } from './blockchainService'
 export { atomService } from './AtomService'
 export { tripleService } from './TripleService'
 export { certificationService } from './CertificationService'
-export type { ContextTripleItem, ObjectAtomData, QuickPublishTarget, SubmitCartResult } from './CertificationService'
+export { redeemService } from './RedeemService'
+export { pageMarketService, computePageMarket } from './PageMarketService'
+export type { PageMarket, PageTag, MyPosition, LegacyPosition, MarketSide } from './PageMarketService'
+export type { RedeemLeg, RedeemResult } from './RedeemService'
+export type { ContextTripleItem, ObjectAtomData, QuickPublishResult, QuickPublishTarget, SubmitCartResult } from './CertificationService'
 export { delegationService } from './DelegationService'
 export type { DelegationGrant, DelegationState, DelegationStatus } from './DelegationService'
 
@@ -41,7 +45,7 @@ export { UserCertificationsServiceClass, userCertificationsService } from './Use
 export type { TripleDetail, CertificationEntry } from './UserCertificationsService'
 
 // Cart
-export { cartService } from './CartService'
+export { cartService, MAX_CART_ITEMS } from './CartService'
 
 // Topic Interests (from Sofia Explorer)
 

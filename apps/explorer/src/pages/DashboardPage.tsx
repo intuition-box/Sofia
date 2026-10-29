@@ -22,10 +22,12 @@ import type { InterestPreset } from '../components/home/useInterestTiles'
 import { useTaxonomy } from '../hooks/useTaxonomy'
 import { INTENTION_PASTEL } from '@0xsofia/design-system'
 import { useCart } from '../hooks/useCart'
-import type { CartItem } from '../hooks/useCart'
 import { PAGE_COLORS } from '../config/pageColors'
-import { SOFIA_TOPICS } from '../config/taxonomy'
-import { displayLabelToIntentionType } from '../config/intentions'
+import {
+  displayLabelToIntentionType,
+  INTENTION_CONFIG,
+} from '../config/intentions'
+import { pageVoteCartItem } from '../services/pageMarketCartService'
 import CircleVerbFilter, {
   type VerbFilterId,
 } from '../components/circles/CircleVerbFilter'
@@ -126,34 +128,20 @@ export default function DashboardPage() {
 
   // Cart system
   const cart = useCart()
-  /**
-   * Like / dislike — stakes the cert's "in context of <topic>" nested
-   * triples, NOT the per-verb vaults. One click adds a position on every
-   * topic context (support → `termId`, oppose → `counterTermId`), so there's
-   * no verb picker / modal. A cert with no topic context has nothing to
-   * stake here — the card renders its thumbs disabled, so this is a no-op.
-   */
+  /** 👍 / 👎 — the page's one market: Recommend it, or oppose the claim */
   const handleDeposit = useCallback(
     (side: 'support' | 'oppose', item: CircleItem) => {
       if (!authenticated || !walletAddress) return
-      const contexts = item.contextTriples.filter((c) =>
-        side === 'support' ? !!c.termId : !!c.counterTermId,
-      )
-      if (contexts.length === 0) return
-      const newItems: CartItem[] = contexts.map((c) => {
-        const meta = SOFIA_TOPICS.find((t) => t.id === c.topicSlug)
-        const termId = side === 'support' ? c.termId : c.counterTermId
-        return {
-          id: `${termId}-${side}`,
-          side,
-          termId,
-          intention: meta?.label ?? c.topicSlug,
+      const row = pageVoteCartItem(
+        side,
+        {
+          objectId: item.objectTermId,
           title: item.title,
           favicon: item.favicon,
-          intentionColor: meta?.color ?? '#888',
-        }
-      })
-      cart.addItems(newItems)
+        },
+        !!item.intentionVaults[INTENTION_CONFIG.trusted.label]?.termId,
+      )
+      if (row) cart.addItem(row)
     },
     [authenticated, walletAddress, cart],
   )
@@ -201,7 +189,10 @@ export default function DashboardPage() {
       ? spaceFiltered.filter((item) => item.topicContexts.includes(drill.id))
       : spaceFiltered.filter((item) =>
           item.intentions.some(
-            (i) => i.toLowerCase() === drill.id.toLowerCase(),
+            // Labels ("Recommended", "Work") → their verb id ("trusted", …)
+            (i) =>
+              (displayLabelToIntentionType(i) ?? i.toLowerCase()) ===
+              drill.id.toLowerCase(),
           ),
         )
 

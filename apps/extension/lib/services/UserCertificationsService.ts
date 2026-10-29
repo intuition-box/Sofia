@@ -18,10 +18,11 @@ import {
   ALL_PREDICATE_IDS,
   ALL_PREDICATE_LABELS,
   OAUTH_PREDICATE_LABELS,
+  PAGE_MARKET_PREDICATE,
   PREDICATE_LABEL_TO_INTENTION,
   TRUST_LABEL_TO_TYPE
 } from "../config/predicateConstants"
-import { resolveContextAtom } from "@0xsofia/taxonomy"
+import { intentionTagForAtom, resolveContextAtom } from "@0xsofia/taxonomy"
 import { normalizeUrl } from "../utils"
 import { createServiceLogger } from "../utils/logger"
 import { txEventBus } from "./TxEventBus"
@@ -212,7 +213,12 @@ class UserCertificationsServiceClass {
 
         const intention = PREDICATE_LABEL_TO_INTENTION[predicateLabel]
         const isOAuthPredicate = OAUTH_PREDICATE_LABELS.includes(predicateLabel)
-        const isTrustPredicate = predicateLabel in TRUST_LABEL_TO_TYPE
+        // A Recommend (the page market) backs the page like the old `trusts`
+        const isTrustPredicate =
+          predicateLabel in TRUST_LABEL_TO_TYPE ||
+          predicateLabel === PAGE_MARKET_PREDICATE
+        const trustLabel =
+          predicateLabel === PAGE_MARKET_PREDICATE ? "trusts" : predicateLabel
 
         logger.debug("Processing triple:", {
           objectLabel,
@@ -273,9 +279,9 @@ class UserCertificationsServiceClass {
           }
           if (
             isTrustPredicate &&
-            !existing.trustPredicates.includes(predicateLabel)
+            !existing.trustPredicates.includes(trustLabel)
           ) {
-            existing.trustPredicates.push(predicateLabel)
+            existing.trustPredicates.push(trustLabel)
           }
           if (
             tripleDetail.tripleTermId &&
@@ -290,7 +296,7 @@ class UserCertificationsServiceClass {
             label: normalizedLabel,
             intentions: intention ? [intention] : [],
             oauthPredicates: isOAuthPredicate ? [predicateLabel] : [],
-            trustPredicates: isTrustPredicate ? [predicateLabel] : [],
+            trustPredicates: isTrustPredicate ? [trustLabel] : [],
             isRootDomain,
             triples: tripleDetail.tripleTermId ? [tripleDetail] : [],
             interestContexts: []
@@ -414,6 +420,14 @@ class UserCertificationsServiceClass {
 
         const entry = termIdToEntry.get(subjectId)
         if (!entry) continue
+
+        // Intention tag (`for work`…) on a Recommend → the entry's intention
+        const tag = ct.object ? intentionTagForAtom(ct.object) : undefined
+        if (tag) {
+          const purpose = `for_${tag.key}` as IntentionPurpose
+          if (!entry.intentions.includes(purpose)) entry.intentions.push(purpose)
+          continue
+        }
 
         // Resolve the context atom — topic OR category. Record the precise
         // slug AND (for a category) its parent topic, so filtering/display

@@ -1,5 +1,5 @@
 import { createWalletClient, custom, createPublicClient, http, fallback } from 'viem'
-import { SELECTED_CHAIN } from '../config/chainConfig'
+import { RPC_HTTP_URLS, SELECTED_CHAIN } from '../config/chainConfig'
 import { createBoundProvider } from '../services/walletProvider'
 import { createServiceLogger } from '../utils/logger'
 
@@ -16,7 +16,7 @@ const logger = createServiceLogger('ViemClients')
  */
 export const buildRpcTransport = () =>
     fallback(
-        SELECTED_CHAIN.rpcUrls.default.http.map((url) =>
+        RPC_HTTP_URLS.map((url) =>
             http(url, { retryCount: 3, retryDelay: 300, timeout: 15_000 })
         )
     )

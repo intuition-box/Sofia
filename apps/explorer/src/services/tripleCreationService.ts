@@ -19,10 +19,25 @@ import {
   SofiaFeeProxyAbi,
   intuitionChain,
   explicitGasLimit,
+  calculateTripleId,
+  paced,
+  pacedClient,
+  preflight,
+  quickClient,
 } from '../lib/contracts'
 import { buildWalletClient, type WalletDescriptor } from './depositService'
 
 const CREATION_CURVE_ID = 1n
+/**
+ * Items per tx. The chain caps a transaction at ~32M gas (it reverts with no
+ * reason past it): createTriples costs up to ~680k per triple on curve 2,
+ * depositBatch ~270k per deposit — measured on mainnet, 2026-10.
+ */
+const CREATE_BATCH_SIZE = 35
+const DEPOSIT_BATCH_SIZE = 80
+const MULTICALL_CHUNK = 100
+const ZERO_ID =
+  '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 /** Minimum signal deposit accepted by SofiaFeeProxy.createTriples /
  *  deposit. Mirrors the extension's `MIN_DEPOSIT` constant
@@ -44,6 +59,9 @@ export interface CreateTripleResult {
    *  instead of minting a new one. UI surfaces this as "you backed an
    *  existing claim" rather than "you created a claim". */
   alreadyExisted?: boolean
+  /** Triples whose tx was mined — also on failure, when a later batch
+   *  failed: these must not be sent again. */
+  confirmedTermIds?: string[]
   error?: string
 }
 
@@ -129,8 +147,8 @@ export async function executeCreateTriple(
         value: totalCost,
         account: address,
       } as const
-      await publicClient.simulateContract(simConfig)
-      const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
+      await preflight(simConfig)
+      const gas = await explicitGasLimit(quickClient, simConfig, 1_500_000n)
       const hash = await client.writeContract({
         ...simConfig,
         gas,
@@ -177,9 +195,9 @@ export async function executeCreateTriple(
       account: address,
     } as const
 
-    await publicClient.simulateContract(simConfig)
+    await preflight(simConfig)
 
-    const gas = await explicitGasLimit(publicClient, simConfig, 2_000_000n)
+    const gas = await explicitGasLimit(quickClient, simConfig, 2_000_000n)
 
     const hash = await client.writeContract({
       ...simConfig,
@@ -213,6 +231,8 @@ export interface BatchCreateTripleItem {
   predicateId: string
   objectId: string
   signalTrust: number
+  /** Bonding curve — 1 (linear, default) or 2 (progressive: page market) */
+  curveId?: bigint
 }
 
 export async function executeCreateTriplesBatch(
@@ -221,6 +241,7 @@ export async function executeCreateTriplesBatch(
 ): Promise<CreateTripleResult> {
   if (items.length === 0) return { success: false, error: 'No items' }
 
+  const confirmed: string[] = []
   try {
     const { address, client } = await buildWalletClient(wallet)
 
@@ -231,22 +252,38 @@ export async function executeCreateTriplesBatch(
       tripleId: `0x${string}`
       exists: boolean
     }> = []
-    for (const item of items) {
-      const id = (await publicClient.readContract({
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'calculateTripleId',
-        args: [
-          item.subjectId as `0x${string}`,
-          item.predicateId as `0x${string}`,
-          item.objectId as `0x${string}`,
-        ],
-        authorizationList: undefined,
-      })) as `0x${string}`
-      calculated.push({
-        item,
-        tripleId: id,
-        exists: await tripleExistsOnChain(id),
+    // Multicall in chunks — one RPC round trip per 100 reads (the public
+    // RPC rate-limits one call per item on big carts).
+    for (let i = 0; i < items.length; i += MULTICALL_CHUNK) {
+      const chunk = items.slice(i, i + MULTICALL_CHUNK)
+      // Triple ids are deterministic — computed locally, no RPC
+      const ids = chunk.map((item) =>
+        calculateTripleId(item.subjectId, item.predicateId, item.objectId),
+      )
+      const triples = await paced(() =>
+        pacedClient.multicall({
+          contracts: ids.map((id) => ({
+            address: PROXY_ADDRESS,
+            abi: SofiaFeeProxyAbi,
+            functionName: 'getTriple' as const,
+            args: [id],
+          })),
+          authorizationList: undefined,
+          batchSize: 0,
+        }),
+      )
+      chunk.forEach((item, j) => {
+        const r = triples[j]
+        const [s, , o] =
+          r.status === 'success'
+            ? (r.result as readonly [string, string, string])
+            : [ZERO_ID, ZERO_ID, ZERO_ID]
+        calculated.push({
+          item,
+          tripleId: ids[j],
+          // Revert or zero-tuple = does not exist
+          exists: s !== ZERO_ID && o !== ZERO_ID,
+        })
       })
     }
 
@@ -256,89 +293,107 @@ export async function executeCreateTriplesBatch(
     let lastTxHash: string | undefined
     let alreadyExisted = false
 
-    // Path 1 — mint the new triples in one batched tx.
-    if (toCreate.length > 0) {
-      const subjectIds = toCreate.map((c) => c.item.subjectId as `0x${string}`)
-      const predicateIds = toCreate.map(
-        (c) => c.item.predicateId as `0x${string}`,
-      )
-      const objectIds = toCreate.map((c) => c.item.objectId as `0x${string}`)
-      const assets = toCreate.map((c) =>
-        BigInt(Math.floor(c.item.signalTrust * 1e18)),
-      )
-      const totalDeposit = assets.reduce((a, b) => a + b, 0n)
+    // Path 1 — mint the new triples, one batched tx per bonding curve
+    // (createTriples takes a single curve for the whole batch).
+    const createGroups = new Map<bigint, typeof toCreate>()
+    for (const c of toCreate) {
+      const curve = c.item.curveId ?? CREATION_CURVE_ID
+      createGroups.set(curve, [...(createGroups.get(curve) ?? []), c])
+    }
+    // Progressive (page market) claims first: tags created in the same
+    // submit hang off them (nested triples need their subject to exist).
+    const orderedGroups = [...createGroups].sort((a, b) =>
+      a[0] === b[0] ? 0 : a[0] > b[0] ? -1 : 1,
+    )
+    for (const [curveId, curveGroup] of orderedGroups) {
+      // Bounded batches: large createTriples revert / exhaust gas
+      for (let k = 0; k < curveGroup.length; k += CREATE_BATCH_SIZE) {
+        const group = curveGroup.slice(k, k + CREATE_BATCH_SIZE)
+        const subjectIds = group.map((c) => c.item.subjectId as `0x${string}`)
+        const predicateIds = group.map(
+          (c) => c.item.predicateId as `0x${string}`,
+        )
+        const objectIds = group.map((c) => c.item.objectId as `0x${string}`)
+        const assets = group.map((c) =>
+          BigInt(Math.floor(c.item.signalTrust * 1e18)),
+        )
+        const totalDeposit = assets.reduce((a, b) => a + b, 0n)
 
-      const tripleCost = (await publicClient.readContract({
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'getTripleCost',
-        authorizationList: undefined,
-      })) as bigint
-      const multiVaultCost = tripleCost * BigInt(toCreate.length) + totalDeposit
-      const totalCost = (await publicClient.readContract({
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'getTotalCreationCost',
-        args: [BigInt(toCreate.length), totalDeposit, multiVaultCost],
-        authorizationList: undefined,
-      })) as bigint
+        const tripleCost = (await publicClient.readContract({
+          address: PROXY_ADDRESS,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'getTripleCost',
+          authorizationList: undefined,
+        })) as bigint
+        const multiVaultCost = tripleCost * BigInt(group.length) + totalDeposit
+        const totalCost = (await publicClient.readContract({
+          address: PROXY_ADDRESS,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'getTotalCreationCost',
+          args: [BigInt(group.length), totalDeposit, multiVaultCost],
+          authorizationList: undefined,
+        })) as bigint
 
-      const args = [
-        address,
-        subjectIds,
-        predicateIds,
-        objectIds,
-        assets,
-        CREATION_CURVE_ID,
-      ] as const
+        const args = [
+          address,
+          subjectIds,
+          predicateIds,
+          objectIds,
+          assets,
+          curveId,
+        ] as const
 
-      const simConfig = {
-        address: PROXY_ADDRESS,
-        abi: SofiaFeeProxyAbi,
-        functionName: 'createTriples',
-        args,
-        value: totalCost,
-        account: address,
-      } as const
+        const simConfig = {
+          address: PROXY_ADDRESS,
+          abi: SofiaFeeProxyAbi,
+          functionName: 'createTriples',
+          args,
+          value: totalCost,
+          account: address,
+        } as const
 
-      await publicClient.simulateContract(simConfig)
+        await preflight(simConfig)
 
-      const gas = await explicitGasLimit(
-        publicClient,
-        simConfig,
-        BigInt(toCreate.length) * 1_000_000n + 1_000_000n,
-      )
+        const gas = await explicitGasLimit(
+          quickClient,
+          simConfig,
+          BigInt(group.length) * 1_000_000n + 1_000_000n,
+        )
 
-      const hash = await client.writeContract({
-        ...simConfig,
-        gas,
-        chain: intuitionChain,
-      })
-      const receipt = await publicClient.waitForTransactionReceipt({ hash })
-      if (receipt.status !== 'success')
-        return {
-          success: false,
-          error: 'createTriples batch reverted',
-        }
-      lastTxHash = hash
+        const hash = await client.writeContract({
+          ...simConfig,
+          gas,
+          chain: intuitionChain,
+        })
+        const receipt = await publicClient.waitForTransactionReceipt({ hash })
+        if (receipt.status !== 'success')
+          return {
+            success: false,
+            error: 'createTriples batch reverted',
+            confirmedTermIds: confirmed,
+          }
+        confirmed.push(...group.map((c) => c.tripleId))
+        lastTxHash = hash
+      }
     }
 
     // Path 2 — depositBatch on the triples that already exist.
-    if (toDeposit.length > 0) {
-      alreadyExisted = true
-      const termIds = toDeposit.map((c) => c.tripleId)
-      const curveIds = toDeposit.map(() => CREATION_CURVE_ID)
-      const assets = toDeposit.map((c) =>
+    if (toDeposit.length > 0) alreadyExisted = true
+    for (let k = 0; k < toDeposit.length; k += DEPOSIT_BATCH_SIZE) {
+      const batch = toDeposit.slice(k, k + DEPOSIT_BATCH_SIZE)
+      const termIds = batch.map((c) => c.tripleId)
+      const curveIds = batch.map((c) => c.item.curveId ?? CREATION_CURVE_ID)
+      const assets = batch.map((c) =>
         BigInt(Math.floor(c.item.signalTrust * 1e18)),
       )
-      const minShares = toDeposit.map(() => 0n)
+      const minShares = batch.map(() => 0n)
       const totalDeposit = assets.reduce((a, b) => a + b, 0n)
 
       const fee = (await publicClient.readContract({
         address: PROXY_ADDRESS,
         abi: SofiaFeeProxyAbi,
         functionName: 'calculateDepositFee',
-        args: [BigInt(toDeposit.length), totalDeposit],
+        args: [BigInt(batch.length), totalDeposit],
         authorizationList: undefined,
       })) as bigint
       const totalValue = totalDeposit + fee
@@ -354,12 +409,12 @@ export async function executeCreateTriplesBatch(
         account: address,
       } as const
 
-      await publicClient.simulateContract(simConfig)
+      await preflight(simConfig)
 
       const gas = await explicitGasLimit(
-        publicClient,
+        quickClient,
         simConfig,
-        BigInt(toDeposit.length) * 600_000n + 1_000_000n,
+        BigInt(batch.length) * 600_000n + 1_000_000n,
       )
 
       const hash = await client.writeContract({
@@ -372,7 +427,9 @@ export async function executeCreateTriplesBatch(
         return {
           success: false,
           error: 'depositBatch on existing triples reverted',
+          confirmedTermIds: confirmed,
         }
+      confirmed.push(...termIds)
       lastTxHash = hash
     }
 
@@ -380,11 +437,13 @@ export async function executeCreateTriplesBatch(
       success: true,
       txHash: lastTxHash,
       alreadyExisted,
+      confirmedTermIds: confirmed,
     }
   } catch (err) {
     return {
       success: false,
       error: err instanceof Error ? err.message : String(err),
+      confirmedTermIds: confirmed,
     }
   }
 }

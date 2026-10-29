@@ -28,6 +28,7 @@ query GetAllActivity($proxy: String!, $limit: Int!, $offset: Int!) {
         term_id
       }
       object {
+        term_id
         label
         value {
           thing {
@@ -70,6 +71,7 @@ query GetUserActivity($receivers: [String!]!, $limit: Int!, $offset: Int!) {
         term_id
       }
       object {
+        term_id
         label
         value {
           thing {

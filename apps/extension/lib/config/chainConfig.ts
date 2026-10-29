@@ -50,6 +50,19 @@ export const {
   INTENTION_MIN_STAKE
 } = config
 
+/**
+ * Endpoints for the extension's own reads/writes: the Sofia RPC proxy
+ * (services/rpc-proxy) first when PLASMO_PUBLIC_INTUITION_RPC_URL is set,
+ * then the chain's public ones as fallback. `SELECTED_CHAIN.rpcUrls` keeps
+ * the public RPC only: wallets may store it for the network.
+ */
+export const RPC_HTTP_URLS: string[] = [
+  ...(process.env.PLASMO_PUBLIC_INTUITION_RPC_URL
+    ? [process.env.PLASMO_PUBLIC_INTUITION_RPC_URL]
+    : []),
+  ...(SELECTED_CHAIN.rpcUrls.default.http as string[])
+]
+
 // Export Sofia proxy address (only available in local config)
 export const SOFIA_PROXY_ADDRESS = 'SOFIA_PROXY_ADDRESS' in config
   ? (config as typeof localConfig).SOFIA_PROXY_ADDRESS

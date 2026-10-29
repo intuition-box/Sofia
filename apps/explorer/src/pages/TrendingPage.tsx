@@ -17,7 +17,11 @@ import { PageHero, FaviconWrapper } from '@0xsofia/design-system'
 import { TrendingUp, Users } from 'lucide-react'
 import { useTrendingPages } from '@/hooks/useTrendingPages'
 import { useCart } from '@/hooks/useCart'
+import { CANONICAL_PREDICATE_IDS, SOFIA_I_ATOM_ID } from '@/config/atomIds'
+import { PAGE_MARKET_PREDICATE_LABEL } from '@0xsofia/taxonomy'
 import PositionBoardDialog from '@/components/profile/PositionBoardDialog'
+import MissionsPanel from '@/components/trending/MissionsPanel'
+import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
 import SofiaLoader from '@/components/ui/SofiaLoader'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { PAGE_COLORS } from '@/config/pageColors'
@@ -47,11 +51,27 @@ const WINDOW_TEXT: Record<TrendingWindow, string> = {
 /** Display label + colour of a claim's predicate (falls back to the raw
  *  label for predicates outside the 8 Sofia intentions). */
 function claimMeta(predicateLabel: string): { label: string; color: string } {
+  if (predicateLabel === PAGE_MARKET_PREDICATE_LABEL)
+    return { label: RECOMMEND_LABEL, color: RECOMMEND_COLOR }
   const type = predicateLabelToIntentionType(predicateLabel)
   if (!type) return { label: predicateLabel, color: 'var(--ds-accent)' }
   const cfg = INTENTION_CONFIG[type]
   return { label: cfg.label, color: cfg.color }
 }
+
+/** The page market (`I | recommends | page`) in the cart */
+const RECOMMEND_LABEL = 'Recommend'
+
+/** Under the board's title: the market is one claim of the page */
+function boardContext(page: TrendingPageItem): string {
+  const people = `${page.supporters}${page.supportersCapped ? '+' : ''} supporter${page.supporters === 1 && !page.supportersCapped ? '' : 's'}`
+  const claims = `${page.claimCount} claim${page.claimCount === 1 ? '' : 's'}`
+  const whole = `${people} and ${formatTrust(BigInt(page.totalStaked))} across ${claims}`
+  return page.market.claim
+    ? `The page's market. The whole page: ${whole}.`
+    : `No market yet — this is the busiest claim. The whole page: ${whole}.`
+}
+const RECOMMEND_COLOR = '#22C55E'
 
 const SOURCE_TEXT: Record<ClaimSource, string> = {
   sofia: 'Sofia',
@@ -77,11 +97,12 @@ function TrendingRow({
   onTakePosition,
   onOpenBoard,
 }: TrendingRowProps) {
-  const meta = page.mainClaim ? claimMeta(page.mainClaim.predicateLabel) : null
+  // Every page trades on one market: taking a position = Recommend
+  const meta = { label: RECOMMEND_LABEL, color: RECOMMEND_COLOR }
   return (
     <article
       className="mk-card"
-      style={{ ['--topic-color' as string]: meta?.color ?? 'var(--ds-accent)' }}
+      style={{ ['--topic-color' as string]: meta.color }}
     >
       <button
         type="button"
@@ -112,14 +133,20 @@ function TrendingRow({
 
       <div className="mk-stats">
         <span className="mk-stat mk-stat--accent">
-          <span className="mk-stat-value">+{page.windowPositions}</span>
+          <span
+            className="mk-stat-value"
+            title={`${page.windowPositions} position${page.windowPositions === 1 ? '' : 's'} opened`}
+          >
+            +{page.windowSupporters}
+          </span>
           <span className="mk-stat-label">
-            Position{page.windowPositions === 1 ? '' : 's'} · {timeWindow}
+            {page.windowSupporters === 1 ? 'Person' : 'People'} · {timeWindow}
           </span>
         </span>
         <span className="mk-stat">
           <span className="mk-stat-value">
             <Users className="h-3 w-3" aria-hidden /> {page.supporters}
+            {page.supportersCapped ? '+' : ''}
           </span>
           <span className="mk-stat-label">Supporters</span>
         </span>
@@ -127,7 +154,7 @@ function TrendingRow({
           <span className="mk-stat-value">
             {formatTrust(BigInt(page.totalStaked))}
           </span>
-          <span className="mk-stat-label">Total staked</span>
+          <span className="mk-stat-label">Staked</span>
         </span>
       </div>
 
@@ -169,20 +196,17 @@ function TrendingRow({
       </div>
 
       <div className="mk-action">
-        {meta && (
-          <span
-            className="mk-claim-pill"
-            title={`Claim: ${page.mainClaim?.predicateLabel}`}
-          >
-            {meta.label}
-          </span>
-        )}
+        <span
+          className="mk-claim-pill"
+          title="The page market: I | recommends | page"
+        >
+          {meta.label}
+        </span>
         <button
           type="button"
           className="pm-dex-invest"
-          style={{ background: meta?.color ?? 'var(--ds-accent)' }}
+          style={{ background: meta.color }}
           onClick={() => onTakePosition(page)}
-          disabled={!page.mainClaim}
         >
           <TrendingUp className="h-3.5 w-3.5" />
           Take position
@@ -211,23 +235,42 @@ export default function TrendingPage() {
   const cart = useCart()
   const [boardPage, setBoardPage] = useState<TrendingPageItem | null>(null)
 
+  // "Take position" = Recommend the page: deposit on its market claim
+  // (`I | recommends | page`, progressive curve), or create it.
   const handleTakePosition = (page: TrendingPageItem) => {
-    if (!page.mainClaim) return
     if (!authenticated) {
       login()
       return
     }
-    const meta = claimMeta(page.mainClaim.predicateLabel)
-    const termId = page.mainClaim.termId
-    cart.addItem({
-      id: `${termId}-support`,
-      side: 'support',
-      termId,
-      intention: meta.label,
-      title: page.title,
-      favicon: page.favicon,
-      intentionColor: meta.color,
-    })
+    const claim = page.market.claim
+    cart.addItem(
+      claim
+        ? {
+            id: `${claim.termId}-support`,
+            side: 'support',
+            termId: claim.termId,
+            objectId: page.market.objectId,
+            intention: RECOMMEND_LABEL,
+            title: page.title,
+            favicon: page.favicon,
+            intentionColor: RECOMMEND_COLOR,
+            curveId: 2,
+          }
+        : {
+            id: `recommend:${page.market.objectId}`,
+            side: 'support',
+            kind: 'create-triple',
+            termId: `recommend:${page.market.objectId}`,
+            subjectId: SOFIA_I_ATOM_ID,
+            predicateId: CANONICAL_PREDICATE_IDS.recommends,
+            objectId: page.market.objectId,
+            intention: RECOMMEND_LABEL,
+            title: page.title,
+            favicon: page.favicon,
+            intentionColor: RECOMMEND_COLOR,
+            curveId: 2,
+          },
+    )
     cart.open()
   }
 
@@ -241,6 +284,9 @@ export default function TrendingPage() {
         title={pc.title}
         description={pc.subtitle}
       />
+
+      <MissionsPanel walletAddress={user?.wallet?.address} />
+      <EarlySignalsSection />
 
       <div className="pm-filters">
         <div className="pm-filter-group">
@@ -333,13 +379,27 @@ export default function TrendingPage() {
           onOpenChange={(open) => {
             if (!open) setBoardPage(null)
           }}
-          termId={boardPage.mainClaim.termId}
-          counterTermId={boardPage.mainClaim.counterTermId}
+          // The page market when it exists (Support / Oppose on recommends),
+          // else the busiest legacy claim, read-only history
+          termId={(boardPage.market.claim ?? boardPage.mainClaim).termId}
+          counterTermId={
+            (boardPage.market.claim ?? boardPage.mainClaim).counterTermId
+          }
           title={boardPage.title}
           favicon={boardPage.favicon}
-          intention={claimMeta(boardPage.mainClaim.predicateLabel).label}
-          intentionColor={claimMeta(boardPage.mainClaim.predicateLabel).color}
+          intention={
+            boardPage.market.claim
+              ? RECOMMEND_LABEL
+              : claimMeta(boardPage.mainClaim.predicateLabel).label
+          }
+          intentionColor={
+            boardPage.market.claim
+              ? RECOMMEND_COLOR
+              : claimMeta(boardPage.mainClaim.predicateLabel).color
+          }
           walletAddress={user?.wallet?.address}
+          curveId={boardPage.market.claim ? 2 : undefined}
+          context={boardContext(boardPage)}
         />
       )}
     </div>

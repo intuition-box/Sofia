@@ -106,10 +106,16 @@ const captureMarkedVerb = () => {
   const items = cartService.getSnapshot().items
   const last = items[items.length - 1]
   if (!last) return
+  // Page market: oppose → distrusted, an intention tag → that verb, else trusted
+  const intentTag = (last.interestContexts ?? []).find((slug) =>
+    slug.startsWith("intent:")
+  )
   let key: string | null = null
-  if (last.predicateName === "trusts") key = "trusted"
-  else if (last.predicateName === "distrust") key = "distrusted"
+  if (last.side === "oppose" || last.predicateName === "distrust")
+    key = "distrusted"
+  else if (intentTag) key = intentTag.slice("intent:".length)
   else if (last.intention) key = last.intention
+  else key = "trusted"
   if (key && INTENTION_CONFIG[key])
     markedVerbLabel = INTENTION_CONFIG[key].label
 }
@@ -219,30 +225,29 @@ const openCircleFeed = (): (() => void) => {
 const ALL_TOUR_STEPS: TourStep[] = [
   {
     key: "intent",
-    target: ".actions-panel",
+    target: ".pm-panel",
     requires: "mark",
-    title: "Choose why this page matters",
-    body: "You're on a page right now. Tap an intention to tell Sofia what it means to you.",
-    cta: "Tap an intention",
-    learn: "What you just did is called a Mark — your own signal about a page.",
+    title: "Back this page",
+    body: "You're on a page right now. Tap <b>Recommend</b> to back it — or Distrust if it misleads.",
+    cta: "Tap Recommend",
+    learn:
+      "A page has one market: the earlier you back it, the more you gain when others follow.",
     complete: { kind: "cartAdd" },
     onEnter: captureActiveDomain
   },
   {
     key: "context",
-    // Verbs + contexts now live in one combobox — highlight the field. The
-    // context rows carry `.is-context`, so completion only fires on a topic /
-    // category tick, not a verb (verbs share `.ext-ctx-row.is-active`).
-    target: ".ext-cat-field",
+    // The modal's tag field — completes once a topic tag is added
+    target: ".ptf .sis-tags",
     requires: "mark",
     title: "What's it about?",
-    body: "Tag your mark with a <b>context</b> — a topic like Tech, Web3 or Music. Pick at least one.",
-    cta: "Choose a context",
+    body: "Tag it with a <b>topic</b> — Sofia suggests tags from the page. Pick at least one.",
+    cta: "Add a tag",
     learn:
-      "Contexts make your signal richer and searchable — and let others vote on it.",
+      "Tags make your signal richer and searchable — and let others vote on it.",
     complete: {
       kind: "domAppear",
-      selector: ".ext-ctx-row.is-context.is-active"
+      selector: ".ptf .sis-tag"
     }
   },
   {

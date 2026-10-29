@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import {
   CERTIFICATION_COLORS,
   INTENTION_CONFIG,
-  predicateLabelToIntentionType,
+  certVerbs,
   type IntentionType,
 } from '../config/intentions'
 import { calculateLevel } from '../lib/level/calculation'
@@ -63,8 +63,8 @@ export function userCertsToActivityInputs(
 ): IntentionActivityInput[] {
   const out: IntentionActivityInput[] = []
   for (const cert of certs) {
-    const intent = predicateLabelToIntentionType(cert.intention)
-    if (!intent) continue
+    const intents = certVerbs(cert)
+    if (intents.length === 0) continue
     const domain =
       (cert.objectUrl && extractDomain(cert.objectUrl)) ||
       (cert.objectLabel && extractDomain(cert.objectLabel)) ||
@@ -72,7 +72,7 @@ export function userCertsToActivityInputs(
     if (!domain) continue
     out.push({
       domain,
-      intents: [intent],
+      intents,
       tags: cert.topicSlugs,
       isCertification: true,
       url: cert.objectUrl || undefined,

@@ -1,7 +1,13 @@
 import type { Address } from 'viem'
 
 // ── Network ──
-export const RPC_URL = 'https://rpc.intuition.systems'
+/** Intuition's public RPC — what wallets get in the chain definition */
+export const PUBLIC_RPC_URL = 'https://rpc.intuition.systems'
+/** Our own reads and writes: the Sofia RPC proxy (services/rpc-proxy) when
+ *  VITE_INTUITION_RPC_URL is set at build time, else the public RPC. Never a
+ *  URL carrying a key — the proxy holds it. */
+export const RPC_URL =
+  (import.meta.env.VITE_INTUITION_RPC_URL as string) || PUBLIC_RPC_URL
 export const GRAPHQL_URL = import.meta.env.DEV
   ? '/v1/graphql'
   : 'https://mainnet.intuition.sh/v1/graphql'
@@ -16,6 +22,10 @@ export const GRAPHQL_WS_URL =
 // through the backend pin-proxy (services/pin-proxy) which holds the key
 // server-side, so it never ships in this public bundle. URL only, no secret.
 export const PIN_PROXY_URL = import.meta.env.VITE_PIN_PROXY_URL as string
+// Sponsored writes (services/write-relayer): free Recommends for email /
+// Google accounts. Unset → every account signs and pays as before.
+export const WRITE_RELAYER_URL =
+  (import.meta.env.VITE_WRITE_RELAYER_URL as string) || ''
 export const EXPLORER_URL = 'https://explorer.intuition.systems'
 
 // ── Sofia Proxy Contract ──
@@ -71,6 +81,14 @@ export const GROUP_API_URL =
   (import.meta.env.DEV
     ? 'http://localhost:8788'
     : 'https://group-api.sofia.intuition.box')
+
+// reputation-api — precomputed reputation leaderboard. Public read endpoint,
+// called directly (the service sets CORS for the explorer origin).
+export const REPUTATION_API_URL =
+  (import.meta.env.VITE_REPUTATION_API_URL as string) ||
+  (import.meta.env.DEV
+    ? 'http://localhost:8790'
+    : 'https://reputation-api.sofia.intuition.box')
 
 // ── Predicate IDs (mainnet) ──
 export const PREDICATE_IDS = {

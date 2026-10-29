@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react'
-import { rpcClient } from '../services/rpcClient'
+import { BaseError, ContractFunctionRevertedError } from 'viem'
+import { quickClient } from '../lib/contracts'
 import { MULTI_VAULT_ADDRESS } from '../lib/contracts/chainConfig'
 import { MultiVaultAbi } from '../lib/contracts/multiVault'
 
 export interface OnchainTriple {
   termId: string
-  exists: boolean
+  /** null: the RPC didn't answer (throttled) — unknown, not missing */
+  exists: boolean | null
   subjectId?: string
   predicateId?: string
   objectId?: string
 }
+
+/** A revert is a real answer ("no such triple"); anything else is the RPC */
+const isRevert = (err: unknown) =>
+  err instanceof BaseError &&
+  !!err.walk((e) => e instanceof ContractFunctionRevertedError)
 
 /**
  * Verify that a list of triple termIds exist on-chain. Used by WeightModal
  * before signing a deposit so the UI can warn the user when the indexer-
  * supplied data points at a triple that has no on-chain backing.
  *
- * Single Multicall3 roundtrip when available; falls back to parallel reads.
+ * One multicall through the fail-fast client. The public RPC throttles often:
+ * an unanswered read is "unknown", never "missing" — a deposit on a missing
+ * term reverts on-chain anyway, so only a definite revert blocks.
  *
  * Returns a Map keyed by the lowercased termId. Undefined while loading.
  */
@@ -38,8 +47,15 @@ export function useTripleVerification(
     let cancelled = false
     setVerified(undefined)
     ;(async () => {
+      const unknown = () =>
+        new Map(
+          termIds.map((termId): [string, OnchainTriple] => [
+            termId.toLowerCase(),
+            { termId, exists: null },
+          ]),
+        )
       try {
-        const responses = await rpcClient.multicall({
+        const responses = await quickClient.multicall({
           contracts: termIds.map((termId) => ({
             address: MULTI_VAULT_ADDRESS as `0x${string}`,
             abi: MultiVaultAbi,
@@ -47,12 +63,9 @@ export function useTripleVerification(
             args: [termId as `0x${string}`],
           })),
           allowFailure: true,
-          // viem's MulticallParameters in this project's pinned version
-          // declares this field as required (Pick<..., "authorizationList">
-          // intersection). Passing undefined opts out of EIP-7702 auth
-          // injection without changing call semantics. We don't cast the
-          // whole param object: doing so makes `responses` lose its tuple
-          // shape and degrade to unknown[] (errors TS2339 at the call site).
+          batchSize: 0,
+          // Opts out of EIP-7702 auth injection (required by the pinned
+          // viem's MulticallParameters type) without changing semantics.
           authorizationList: undefined,
         })
         if (cancelled) return
@@ -73,41 +86,16 @@ export function useTripleVerification(
               objectId,
             })
           } else {
-            map.set(termId.toLowerCase(), { termId, exists: false })
+            map.set(termId.toLowerCase(), {
+              termId,
+              exists: r && isRevert(r.error) ? false : null,
+            })
           }
         })
         setVerified(map)
       } catch {
-        // Multicall isn't deployed or RPC failed — fall back to parallel reads.
-        if (cancelled) return
-        const entries = await Promise.all(
-          termIds.map(async (termId): Promise<[string, OnchainTriple]> => {
-            try {
-              const result = (await rpcClient.readContract({
-                address: MULTI_VAULT_ADDRESS as `0x${string}`,
-                abi: MultiVaultAbi,
-                functionName: 'getTriple',
-                args: [termId as `0x${string}`],
-                // Same EIP-7702 opt-out as in the multicall path above.
-                authorizationList: undefined,
-              })) as [string, string, string]
-              return [
-                termId.toLowerCase(),
-                {
-                  termId,
-                  exists: true,
-                  subjectId: result[0],
-                  predicateId: result[1],
-                  objectId: result[2],
-                },
-              ]
-            } catch {
-              return [termId.toLowerCase(), { termId, exists: false }]
-            }
-          }),
-        )
-        if (cancelled) return
-        setVerified(new Map(entries))
+        // RPC throttled / down: nothing is known, nothing is blocked
+        if (!cancelled) setVerified(unknown())
       }
     })()
     return () => {

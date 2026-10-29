@@ -1,26 +1,56 @@
 /**
- * TopicLeaderboardTable — the "Topic" tab of the global Leaderboard.
- *
- * Per-topic ranking is intentionally a "coming soon" placeholder: a faithful
- * topic-scoped score means EigenTrust-weighted reputation *within a single
- * topic*, computed per account (à la useDerivedReputation, but for everyone).
- * That needs a dedicated aggregation service, so rather than ship a global
- * EigenTrust ranking dressed up as per-topic, we hold the surface.
+ * TopicLeaderboardTable — the reputation leaderboard, rendered as a grid of
+ * VoiceCards (one per account). Used for both the overall ranking (summed
+ * buckets) and a single-topic ranking; the caller passes already-ranked
+ * entries. ENS + verified socials are resolved here in one batch.
  */
-import { Sparkles } from 'lucide-react'
+import { useMemo } from 'react'
+import type { Address } from 'viem'
+import { useEnsNames } from '@/hooks/useEnsNames'
+import { useTaxonomy } from '@/hooks/useTaxonomy'
+import { useVerifiedSocials } from '@/hooks/useVerifiedSocials'
+import type { LeaderboardEntry } from '@/hooks/useReputationLeaderboard'
+import VoiceCard from './VoiceCard'
 
-export default function TopicLeaderboardTable() {
+interface TopicLeaderboardTableProps {
+  entries: LeaderboardEntry[]
+  /** wallet → its strongest topic slugs, for the "Top voice · X" line. */
+  topTopicsByWallet?: Map<string, string[]>
+  loading?: boolean
+  emptyLabel?: string
+}
+
+export default function TopicLeaderboardTable({
+  entries,
+  topTopicsByWallet,
+  loading = false,
+  emptyLabel = 'No ranked accounts yet.',
+}: TopicLeaderboardTableProps) {
+  const wallets = useMemo(() => entries.map((e) => e.wallet), [entries])
+  const { getDisplay, getAvatar } = useEnsNames(wallets as Address[])
+  const { topicById } = useTaxonomy()
+  const { socials } = useVerifiedSocials(wallets)
+
+  if (loading) return <p className="hm-empty">Loading…</p>
+  if (entries.length === 0) return <p className="hm-empty">{emptyLabel}</p>
+
   return (
-    <div className="lb-coming-soon">
-      <span className="lb-coming-soon-icon" aria-hidden="true">
-        <Sparkles className="h-5 w-5" />
-      </span>
-      <span className="lb-coming-soon-badge">Coming soon</span>
-      <p className="lb-coming-soon-title">Per-topic trust ranking</p>
-      <p className="lb-coming-soon-text">
-        Ranking accounts by their EigenTrust-weighted reputation within a single
-        topic is on the way.
-      </p>
+    <div className="hm-voices-grid">
+      {entries.map((entry) => {
+        const addr = entry.wallet as Address
+        const topSlug = topTopicsByWallet?.get(entry.wallet)?.[0]
+        return (
+          <VoiceCard
+            key={entry.wallet}
+            wallet={entry.wallet}
+            display={getDisplay(addr)}
+            avatar={getAvatar(addr)}
+            topicLabel={topSlug ? topicById[topSlug]?.label : undefined}
+            score={entry.score}
+            socials={socials[entry.wallet.toLowerCase()] ?? []}
+          />
+        )
+      })}
     </div>
   )
 }

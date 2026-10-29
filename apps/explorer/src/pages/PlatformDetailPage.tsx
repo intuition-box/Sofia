@@ -21,11 +21,12 @@ import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import type { UserCert } from '@/services/userOnChainProfileService'
 import { usePlatformMarket } from '@/hooks/usePlatformMarket'
 import { useCart } from '@/hooks/useCart'
-import type { CartItem } from '@/hooks/useCart'
 import { PLATFORM_ATOM_IDS } from '@/config/atomIds'
 import { PLATFORM_CATALOG } from '@/config/platformCatalog'
 import { extractDomain } from '@/utils/formatting'
 import { getFaviconUrl } from '@/utils/favicon'
+import { isLegacyPagePredicate } from '@0xsofia/taxonomy'
+import { pageVoteCartItem } from '@/services/pageMarketCartService'
 import { useTaxonomy } from '@/hooks/useTaxonomy'
 import { UrlPreview } from '@/components/UrlPreview'
 import { Breadcrumb } from '@/components/Breadcrumb'
@@ -45,6 +46,7 @@ import '@/components/styles/topic-search.css'
 // toolbar isn't flex, so the search goes full-width and the Invest button
 // wraps below instead of sharing the row.
 import '@/components/styles/profile-sections.css'
+import { certVerbs, INTENTION_CONFIG } from '@/config/intentions'
 
 /** Domain → catalog slug, mirroring `utils/favicon.ts` so a `/profile/platform/youtube.com`
  *  URL resolves to the same `youtube` slug used in PLATFORM_ATOM_IDS. */
@@ -122,39 +124,25 @@ export default function PlatformDetailPage() {
     to: viewedAddress ? `/profile/${viewedAddress}` : '/profile',
   }
   const { topicById } = useTaxonomy()
-  // Like / dislike a cert — a like backs the cert's "in context of <topic>"
-  // triples (one stake per topic), NOT the cert vault (the verb). This mirrors
-  // the circle feed (CircleFeedSection.handleDeposit) so the right tx is queued
-  // and the stake feeds topic reputation. Deduped by topic. No-op when signed
-  // out or when the cert carries no stakable context.
+  /** 👍 / 👎 — the page's one market: Recommend it, or oppose the claim */
   const handleVote = useCallback(
     (cert: UserCert, side: 'support' | 'oppose') => {
       if (!authenticated) return
       const domain =
         extractDomain(cert.objectUrl) || extractDomain(cert.objectLabel) || ''
-      const favicon = domain ? getFaviconUrl(domain) : ''
-      const title = cert.objectLabel || domain
-      const seen = new Set<string>()
-      const newItems: CartItem[] = []
-      for (const c of cert.contextTriples) {
-        const termId = side === 'support' ? c.termId : c.counterTermId
-        if (!termId || seen.has(c.topicSlug)) continue
-        seen.add(c.topicSlug)
-        const meta = topicById(c.topicSlug)
-        newItems.push({
-          id: `${termId}-${side}`,
-          side,
-          termId,
-          intention: meta?.label ?? c.topicSlug,
-          title,
-          favicon,
-          intentionColor: meta?.color ?? '#888',
-        })
-      }
-      if (newItems.length === 0) return
-      cart.addItems(newItems)
+      const row = pageVoteCartItem(
+        side,
+        {
+          objectId: cert.objectTermId,
+          title: cert.objectLabel || domain,
+          favicon: domain ? getFaviconUrl(domain) : '',
+        },
+        // A Recommend cert IS the claim; a legacy one isn't
+        !isLegacyPagePredicate(cert.intention),
+      )
+      if (row) cart.addItem(row)
     },
-    [authenticated, cart, topicById],
+    [authenticated, cart],
   )
   const profileAddresses = viewedAddress
     ? [viewedAddress]
@@ -202,7 +190,11 @@ export default function PlatformDetailPage() {
     return platformCerts.filter((c) => {
       const label = (c.objectLabel || '').toLowerCase()
       const url = (c.objectUrl || '').toLowerCase()
-      const verb = (c.intention || '').toLowerCase()
+      // Recommended + intention tags, as shown on the cards
+      const verb = certVerbs(c)
+        .map((t) => INTENTION_CONFIG[t].label)
+        .join(' ')
+        .toLowerCase()
       return label.includes(q) || url.includes(q) || verb.includes(q)
     })
   }, [platformCerts, query])

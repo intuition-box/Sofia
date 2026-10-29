@@ -90,4 +90,16 @@ export const MultiVaultAbi = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
+  // approve(sender, approvalType) — lets `sender` deposit (1) / redeem (2) /
+  // both (3) with the caller as receiver. SofiaFeeProxy needs deposit.
+  {
+    inputs: [
+      { internalType: 'address', name: 'sender', type: 'address' },
+      { internalType: 'uint8', name: 'approvalType', type: 'uint8' },
+    ],
+    name: 'approve',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
 ] as const

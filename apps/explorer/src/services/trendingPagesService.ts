@@ -31,6 +31,7 @@ import {
   type GetTrendingPagePositionsQuery,
   type GetTrendingPageDetailsQuery,
 } from '@0xsofia/graphql'
+import { PAGE_MARKET_PREDICATE_LABEL } from '@0xsofia/taxonomy'
 import {
   CANONICAL_PREDICATE_IDS,
   CANONICAL_SUPPORT_PREDICATE_LABELS,
@@ -88,6 +89,10 @@ const POSITIONS_PAGE = 100
 const MAX_POSITION_PAGES = 20
 /** Safety cap on the details pages of one slice (1 000 claims). */
 const MAX_DETAIL_PAGES = 10
+/** Rows the indexer returns per nested list — a claim's supporter list
+ *  stops there, so a page reaching it has at least that many. */
+const INDEXER_ROW_CAP = 100
+
 /** How many earliest supporters a card shows. */
 const FIRST_SUPPORTERS = 3
 
@@ -150,13 +155,18 @@ export interface TrendingPage extends TrendingPageRank {
   totalStaked: string
   /** Distinct wallets in position (shares > 0) on any of the claims. */
   supporters: number
+  /** A claim hit the indexer's row cap: `supporters` is a lower bound */
+  supportersCapped: boolean
   claimCount: number
   /** Distinct atoms the claims point to (same page, several atoms). */
   atomCount: number
   /** Earliest positions across the page's claims, oldest first. */
   firstSupporters: FirstSupporter[]
-  /** The claim a "Take position" targets: most supporters, then most staked. */
+  /** The busiest claim: most supporters, then most staked. */
   mainClaim: TrendingPageClaim | null
+  /** The page market a "Take position" targets: Sofia's `I | recommends |
+   *  page` claim when it exists, else the atom to create it on. */
+  market: { claim: TrendingPageClaim | null; objectId: string }
   /** Sources present among the claims, Sofia first. */
   sources: ClaimSource[]
   /** Every claim behind the card, most supporters first. */
@@ -222,8 +232,11 @@ export function rankTrendingPages(
     )
 }
 
-/** Sofia claim: a Sofia page predicate, and `trusts` only from Sofia's `I`
- *  (other apps write `trusts` too). */
+/** Predicates other apps write too: Sofia's only from Sofia's `I` */
+const SHARED_PREDICATE_LABELS = ['trusts', 'recommends']
+
+/** Sofia claim: a Sofia page predicate, and `trusts` / `recommends` (the page
+ *  market) only from Sofia's `I` — other apps write them too. */
 export function claimSource(
   claim: Pick<ClaimRow, 'subject_id'> & {
     predicate?: { label?: string | null } | null
@@ -231,7 +244,10 @@ export function claimSource(
 ): ClaimSource {
   const label = claim.predicate?.label ?? ''
   if (!TRENDING_PREDICATE_LABELS.includes(label)) return 'ecosystem'
-  if (label === 'trusts' && claim.subject_id !== SOFIA_I_ATOM_ID) {
+  if (
+    SHARED_PREDICATE_LABELS.includes(label) &&
+    claim.subject_id !== SOFIA_I_ATOM_ID
+  ) {
     return 'ecosystem'
   }
   return 'sofia'
@@ -270,6 +286,7 @@ export function buildTrendingPages(
 
     let totalStaked = 0n
     const wallets: Record<string, true> = {}
+    let supportersCapped = false
     const atoms: Record<string, true> = {}
     const earliest: Record<string, FirstSupporter> = {}
     const summaries: { claim: TrendingClaimSummary; staked: bigint }[] = []
@@ -279,6 +296,7 @@ export function buildTrendingPages(
       totalStaked += staked
       atoms[c.object_id] = true
       const claimWallets: Record<string, true> = {}
+      if (c.supporters.length >= INDEXER_ROW_CAP) supportersCapped = true
       for (const p of c.supporters) {
         const w = p.account_id.toLowerCase()
         wallets[w] = true
@@ -319,6 +337,11 @@ export function buildTrendingPages(
       )
       .map((s) => s.claim)
     const main = claimList[0]
+    const marketClaim = claimList.find(
+      (c) =>
+        c.predicateLabel === PAGE_MARKET_PREDICATE_LABEL &&
+        c.source === 'sofia',
+    )
     const mainObject =
       pageClaims.find((c) => c.term_id === main.termId)?.object ??
       pageClaims[0].object
@@ -343,6 +366,7 @@ export function buildTrendingPages(
       favicon: getFaviconUrl(domain),
       totalStaked: String(totalStaked),
       supporters: Object.keys(wallets).length,
+      supportersCapped,
       claimCount: pageClaims.length,
       atomCount: Object.keys(atoms).length,
       firstSupporters: Object.values(earliest)
@@ -352,6 +376,16 @@ export function buildTrendingPages(
         termId: main.termId,
         counterTermId: main.counterTermId,
         predicateLabel: main.predicateLabel,
+      },
+      market: {
+        claim: marketClaim
+          ? {
+              termId: marketClaim.termId,
+              counterTermId: marketClaim.counterTermId,
+              predicateLabel: marketClaim.predicateLabel,
+            }
+          : null,
+        objectId: mainObject.term_id,
       },
       sources,
       claims: claimList,

@@ -1,6 +1,6 @@
 import { useSyncExternalStore, useEffect, useCallback, useMemo } from "react"
 import { useWalletFromStorage } from "./useWalletFromStorage"
-import { cartService } from "~/lib/services"
+import { cartService, MAX_CART_ITEMS } from "~/lib/services"
 import { normalizeUrl } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 
@@ -56,6 +56,12 @@ export const useCart = () => {
       )
     },
     [walletAddress]
+  )
+
+  const setItemContexts = useCallback(
+    (itemId: string, interestContexts: string[]) =>
+      cartService.setItemContexts(itemId, interestContexts),
+    []
   )
 
   const clearCart = useCallback(() => {
@@ -128,14 +134,22 @@ export const useCart = () => {
     [state.items]
   )
 
+  /** No new page fits until the cart is published (gas cap per tx) */
+  const isFull = useMemo(
+    () => state.items.filter((item) => !item.voteAction).length >= MAX_CART_ITEMS,
+    [state.items]
+  )
+
   return {
     items: state.items,
     count: state.count,
+    isFull,
     atomsToCreate,
     addToCart,
     addVoteToCart,
     removeFromCart,
     updateContextForUrl,
+    setItemContexts,
     clearCart,
     isInCart,
     isVoteInCart,

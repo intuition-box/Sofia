@@ -13,7 +13,7 @@ import { CAL_DAYS, type CalendarTopicSeries } from '@/lib/activityCalendar'
 import {
   INTENTION_CONFIG,
   getIntentionColor,
-  predicateLabelToIntentionType,
+  certVerbs,
 } from '@/config/intentions'
 import { useUserOnChainProfile } from '@/hooks/useUserOnChainProfile'
 import type { OnChainTopic } from '@/services/taxonomyService'
@@ -87,16 +87,17 @@ export function useCalendarSeries(
   const countsByVerb = useMemo(() => {
     const out = new Map<string, number[]>()
     for (const cert of profile.certs) {
-      const verbId = predicateLabelToIntentionType(cert.intention)
-      if (!verbId || !CALENDAR_VERB_IDS.has(verbId)) continue
       const idx = dayIndexFor(cert.certifiedAt, todayMs)
       if (idx === null) continue
-      let counts = out.get(verbId)
-      if (!counts) {
-        counts = new Array<number>(CAL_DAYS).fill(0)
-        out.set(verbId, counts)
+      for (const verbId of certVerbs(cert)) {
+        if (!CALENDAR_VERB_IDS.has(verbId)) continue
+        let counts = out.get(verbId)
+        if (!counts) {
+          counts = new Array<number>(CAL_DAYS).fill(0)
+          out.set(verbId, counts)
+        }
+        counts[idx] += 1
       }
-      counts[idx] += 1
     }
     return out
   }, [profile, todayMs])

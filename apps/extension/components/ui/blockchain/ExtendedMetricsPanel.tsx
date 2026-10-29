@@ -16,7 +16,7 @@ import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import type { RankedPosition } from "~/lib/utils"
 import type { IntentionPurpose } from "~/types/discovery"
 import {
-  INTENTION_ITEMS,
+  INTENTION_CONFIG,
   predicateLabelToIntentionType,
   type IntentionType
 } from "~/types/intentionCategories"
@@ -77,7 +77,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(
     positionsLoading,
     onTripletClick
   }) => {
-    const [filterScope, setFilterScope] = useState<FilterScope>("page")
+    const [filterScope, setFilterScope] = useState<FilterScope>("certifiers")
 
     const hostname = useMemo(() => {
       if (!currentUrl) return null
@@ -87,23 +87,6 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(
         return null
       }
     }, [currentUrl])
-
-    // Select active stats based on scope (only relevant for domain/page)
-    const activeTrust =
-      filterScope === "domain" ? counts.domainTrustCount : counts.trustCount
-    const activeDistrust =
-      filterScope === "domain"
-        ? counts.domainDistrustCount
-        : counts.distrustCount
-    const activeIntentions =
-      filterScope === "domain" ? intentionStats : pageIntentionStats
-    const activeTotal =
-      filterScope === "domain" ? intentionTotal : pageIntentionTotal
-    const activeMax =
-      filterScope === "domain" ? maxIntentionCount : pageMaxIntentionCount
-
-    // Include trust/distrust in max for proportional progress bars
-    const effectiveMax = Math.max(activeMax, activeTrust, activeDistrust)
 
     // Triplets sorted by newest only (sort UI removed)
     const sortedTriplets = useMemo(() => {
@@ -121,16 +104,6 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(
           <div className="section-header">
             <span className="section-title">Stats on {scopeLabel}</span>
             <div className="scope-toggle">
-              <button
-                className={`scope-btn ${filterScope === "domain" ? "active" : ""}`}
-                onClick={() => setFilterScope("domain")}>
-                Domain
-              </button>
-              <button
-                className={`scope-btn ${filterScope === "page" ? "active" : ""}`}
-                onClick={() => setFilterScope("page")}>
-                Page
-              </button>
               <button
                 className={`scope-btn ${filterScope === "certifiers" ? "active" : ""}`}
                 onClick={() => setFilterScope("certifiers")}>
@@ -180,7 +153,7 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(
                           {intentSlug ? (
                             <VerbTag
                               intent={intentSlug}
-                              label={triplet.predicate.label}
+                              label={INTENTION_CONFIG[intentSlug].label}
                               icon={verbIcon(intentSlug)}
                               className="triplet-predicate-tag"
                             />
@@ -206,76 +179,6 @@ const ExtendedMetricsPanel: React.FC<ExtendedMetricsPanelProps> = memo(
             </div>
           )}
 
-          {(filterScope === "domain" || filterScope === "page") && (
-            <>
-              <div className="section-subheader">
-                <span className="intentions-total">
-                  {activeTotal + activeTrust + activeDistrust} total
-                </span>
-              </div>
-
-              {intentionStatsLoading ? (
-                <div className="intentions-loading">
-                  <div className="loading-spinner small"></div>
-                </div>
-              ) : (
-                <div className="intentions-progress-list">
-                  <div className="intention-progress-item">
-                    <VerbTag
-                      intent="trusted"
-                      label="trusted"
-                      icon={verbIcon("trusted")}
-                    />
-                    <div className="progress-track">
-                      <div
-                        className="progress-fill trusted"
-                        style={{
-                          width: `${effectiveMax > 0 ? (activeTrust / effectiveMax) * 100 : 0}%`
-                        }}
-                      />
-                    </div>
-                    <span className="intention-count">{activeTrust}</span>
-                  </div>
-                  <div className="intention-progress-item">
-                    <VerbTag
-                      intent="distrusted"
-                      label="distrusted"
-                      icon={verbIcon("distrusted")}
-                    />
-                    <div className="progress-track">
-                      <div
-                        className="progress-fill distrusted"
-                        style={{
-                          width: `${effectiveMax > 0 ? (activeDistrust / effectiveMax) * 100 : 0}%`
-                        }}
-                      />
-                    </div>
-                    <span className="intention-count">{activeDistrust}</span>
-                  </div>
-                  {INTENTION_ITEMS.map(({ key, label, type }) => (
-                    <div key={key} className="intention-progress-item">
-                      <VerbTag
-                        intent={type}
-                        label={label}
-                        icon={verbIcon(type)}
-                      />
-                      <div className="progress-track">
-                        <div
-                          className={`progress-fill ${type}`}
-                          style={{
-                            width: `${effectiveMax > 0 ? (activeIntentions[key] / effectiveMax) * 100 : 0}%`
-                          }}
-                        />
-                      </div>
-                      <span className="intention-count">
-                        {activeIntentions[key]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
         </div>
       </div>
     )

@@ -64,6 +64,8 @@ export const PREDICATE_IDS = {
   TRUSTS: "0x0000000000000000000000000000000000000000000000000000000000000002",
   DISTRUST: "0x0000000000000000000000000000000000000000000000000000000000000004",
   HAS_TAG: "0x0000000000000000000000000000000000000000000000000000000000000005",
+  // The page market: `I | recommends | page` (canonical ontology atom)
+  RECOMMENDS: "",
   // Discovery/Intention predicates (will be created on first use)
   VISITS_FOR_WORK: "",
   VISITS_FOR_LEARNING: "",
@@ -92,6 +94,7 @@ export const PREDICATE_NAMES = {
   TRUSTS: "trusts",
   DISTRUST: "distrust",
   HAS_TAG: "has tag",
+  RECOMMENDS: "recommends",
   // Discovery/Intention predicates
   VISITS_FOR_WORK: "visits for work",
   VISITS_FOR_LEARNING: "visits for learning",

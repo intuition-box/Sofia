@@ -5,7 +5,7 @@
  * support/oppose thumbs + intent verb chips.
  */
 import type { CircleItem } from '@/services/circleService'
-import { INTENTION_COLORS } from '@/config/intentions'
+import { INTENTION_COLORS, INTENTION_CONFIG } from '@/config/intentions'
 import { SOFIA_TOPICS } from '@/config/taxonomy'
 import { timeAgo } from '@/utils/formatting'
 import FeedCardView, {
@@ -41,40 +41,26 @@ export default function FeedCard({
   size,
   onDeposit,
 }: FeedCardProps) {
-  // A like/dislike stakes the cert's "in context of <topic>" nested
-  // triples — NOT the per-verb vaults — so one click = one position on the
-  // topic context(s), no verb picker. Counts + the lit state aggregate
-  // across those context triples. No context tag → nothing to stake, so the
-  // thumbs render disabled (with a tooltip) rather than fanning out across
-  // every verb vault.
-  let supports = 0
-  let opposes = 0
-  let userSupported = false
-  let userOpposed = false
-  for (const c of item.contextTriples) {
-    supports += c.supportCount
-    opposes += c.opposeCount
-    if (c.userSupported) userSupported = true
-    if (c.userOpposed) userOpposed = true
-  }
-  const canSupport = item.contextTriples.some((c) => c.termId)
-  const canOppose = item.contextTriples.some((c) => c.counterTermId)
+  // 👍 / 👎 = the page's one market (its Recommend claim), on any card that
+  // points to a page — see pageMarketCartService
+  const market = item.intentionVaults[INTENTION_CONFIG.trusted.label]
+  const supports = market?.supportCount ?? 0
+  const opposes = market?.opposeCount ?? 0
+  const userSupported = !!market?.userSupported
+  const userOpposed = !!market?.userOpposed
+  const canSupport = !!item.objectTermId
+  const canOppose = !!market?.counterTermId
 
-  // Queued-in-cart state — a like/dislike goes to the cart first and settles
-  // on-chain at batch submit. Mark the matching thumb as pending (dashed green)
-  // so the click gives immediate feedback while the tx is still unconfirmed.
+  // Queued in the cart: the thumb shows pending until the batch is signed
   const { items: cartItems } = useCart()
-  const pendingUp = item.contextTriples.some(
-    (c) =>
-      c.termId &&
-      cartItems.some((ci) => ci.termId === c.termId && ci.side === 'support'),
+  const pendingUp = cartItems.some(
+    (ci) => ci.side === 'support' && ci.id === `recommend:${item.objectTermId}`,
   )
-  const pendingDown = item.contextTriples.some(
-    (c) =>
-      c.counterTermId &&
-      cartItems.some(
-        (ci) => ci.termId === c.counterTermId && ci.side === 'oppose',
-      ),
+  const pendingDown = cartItems.some(
+    (ci) =>
+      ci.side === 'oppose' &&
+      !!market?.counterTermId &&
+      ci.termId.toLowerCase() === market.counterTermId.toLowerCase(),
   )
 
   const verbs: FeedCardVerb[] = item.intentions.map((label) => {
@@ -94,13 +80,16 @@ export default function FeedCard({
     ...categoryPills(item.categorySlugs ?? []),
   ]
 
-  // The "in context of" subject is a cert triple term_id; a cert can hold
-  // several (one per intention vault). Pick the first deterministically so the
-  // cart dedupe id is stable across re-renders.
-  const certTermId = Object.values(item.intentionVaults)
-    .map((v) => v.termId)
-    .filter(Boolean)
-    .sort()[0]
+  // The "in context of" subject is a cert triple term_id; a page can hold
+  // several (the Recommend + legacy claims). Tags go on the Recommend (the
+  // page market); else the first one, deterministically, so the cart dedupe
+  // id is stable across re-renders.
+  const certTermId =
+    item.intentionVaults[INTENTION_CONFIG.trusted.label]?.termId ||
+    Object.values(item.intentionVaults)
+      .map((v) => v.termId)
+      .filter(Boolean)
+      .sort()[0]
 
   return (
     <FeedCardView

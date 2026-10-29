@@ -628,3 +628,5 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
 export const QUEST_XP_REWARDS: Record<string, number> = Object.fromEntries(
   QUEST_DEFINITIONS.map((q) => [q.id, q.xpReward]),
 )
+
+export * from './missions'

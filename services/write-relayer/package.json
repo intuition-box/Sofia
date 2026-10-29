@@ -1,0 +1,29 @@
+{
+  "name": "write-relayer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "test -f prisma/schema.prisma && prisma generate || true",
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "test": "bun test",
+    "typecheck": "prisma generate && tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@0xsofia/graphql": "workspace:*",
+    "@0xsofia/taxonomy": "workspace:*",
+    "@prisma/client": "^6.2.0",
+    "@privy-io/server-auth": "^1.18.0",
+    "hono": "^4.6.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.0",
+    "prisma": "^6.2.0",
+    "typescript": "^5.4.0"
+  }
+}

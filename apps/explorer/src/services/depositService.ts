@@ -11,6 +11,8 @@ import {
   PROXY_ADDRESS,
   SofiaFeeProxyAbi,
   explicitGasLimit,
+  preflight,
+  quickClient,
 } from '../lib/contracts'
 
 // ---------------------------------------------------------------------------
@@ -26,6 +28,8 @@ export interface DepositResult {
 export interface BatchDepositItem {
   termId: string
   amountTrust: number
+  /** Bonding curve — 1 (linear, default) or 2 (progressive: page market) */
+  curveId?: bigint
 }
 
 /** Minimal wallet descriptor accepted by service functions. */
@@ -228,6 +232,7 @@ export async function executeSingleDeposit(
   wallet: WalletDescriptor,
   termId: string,
   amountTrust: number,
+  curveId: bigint = 1n,
 ): Promise<DepositResult> {
   const { address, client } = await buildWalletClient(wallet)
   const depositWei = BigInt(Math.floor(amountTrust * 1e18))
@@ -244,14 +249,14 @@ export async function executeSingleDeposit(
     address: PROXY_ADDRESS,
     abi: SofiaFeeProxyAbi,
     functionName: 'deposit',
-    args: [address, termId as `0x${string}`, 1n, 0n],
+    args: [address, termId as `0x${string}`, curveId, 0n],
     value: totalCost,
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
-  const gas = await explicitGasLimit(publicClient, simConfig, 1_500_000n)
+  const gas = await explicitGasLimit(quickClient, simConfig, 1_500_000n)
 
   const hash = await client.writeContract({
     ...simConfig,
@@ -276,7 +281,7 @@ export async function executeBatchDeposit(
   const { address, client } = await buildWalletClient(wallet)
 
   const termIds = items.map((i) => i.termId as `0x${string}`)
-  const curveIds = items.map(() => 1n)
+  const curveIds = items.map((i) => i.curveId ?? 1n)
   const assets = items.map((i) => BigInt(Math.floor(i.amountTrust * 1e18)))
   const minShares = items.map(() => 0n)
 
@@ -293,10 +298,10 @@ export async function executeBatchDeposit(
     account: address,
   } as const
 
-  await publicClient.simulateContract(simConfig)
+  await preflight(simConfig)
 
   const gas = await explicitGasLimit(
-    publicClient,
+    quickClient,
     simConfig,
     BigInt(items.length) * 600_000n + 1_000_000n,
   )

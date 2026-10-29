@@ -84,6 +84,7 @@
         "@0xsofia/design-system": "workspace:*",
         "@0xsofia/graphql": "workspace:*",
         "@0xsofia/quests": "workspace:*",
+        "@0xsofia/reputation": "workspace:*",
         "@0xsofia/taxonomy": "workspace:*",
         "@dicebear/collection": "^9.0.0",
         "@dicebear/core": "^9.0.0",
@@ -118,6 +119,7 @@
         "@tanstack/react-query": "^5.0.0",
         "@tanstack/react-query-persist-client": "^5.0.0",
         "ably": "^2.5.0",
+        "buffer": "^6.0.3",
         "class-variance-authority": "^0.7.1",
         "clsx": "*",
         "cmdk": "^1.1.1",
@@ -306,6 +308,17 @@
         "typescript": "^5.9.3",
       },
     },
+    "packages/reputation": {
+      "name": "@0xsofia/reputation",
+      "version": "0.0.0",
+      "dependencies": {
+        "@0xsofia/taxonomy": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.0",
+        "typescript": "^5.9.3",
+      },
+    },
     "packages/taxonomy": {
       "name": "@0xsofia/taxonomy",
       "version": "0.0.0",
@@ -371,6 +384,51 @@
         "typescript": "^5.4.0",
       },
     },
+    "services/reputation-api": {
+      "name": "reputation-api",
+      "version": "0.1.0",
+      "dependencies": {
+        "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/reputation": "workspace:*",
+        "@0xsofia/taxonomy": "workspace:*",
+        "@prisma/client": "^6.2.0",
+        "hono": "^4.6.0",
+        "viem": "^2.21.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.0",
+        "prisma": "^6.2.0",
+        "typescript": "^5.4.0",
+      },
+    },
+    "services/rpc-proxy": {
+      "name": "rpc-proxy",
+      "version": "0.1.0",
+      "dependencies": {
+        "hono": "^4.6.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.0",
+        "typescript": "^5.4.0",
+      },
+    },
+    "services/write-relayer": {
+      "name": "write-relayer",
+      "version": "0.1.0",
+      "dependencies": {
+        "@0xsofia/graphql": "workspace:*",
+        "@0xsofia/taxonomy": "workspace:*",
+        "@prisma/client": "^6.2.0",
+        "@privy-io/server-auth": "^1.18.0",
+        "hono": "^4.6.0",
+        "viem": "^2.21.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.0",
+        "prisma": "^6.2.0",
+        "typescript": "^5.4.0",
+      },
+    },
   },
   "overrides": {
     "react": "18.2.0",
@@ -387,6 +445,8 @@
     "@0xsofia/graphql": ["@0xsofia/graphql@workspace:packages/graphql"],
 
     "@0xsofia/quests": ["@0xsofia/quests@workspace:packages/quests"],
+
+    "@0xsofia/reputation": ["@0xsofia/reputation@workspace:packages/reputation"],
 
     "@0xsofia/taxonomy": ["@0xsofia/taxonomy@workspace:packages/taxonomy"],
 
@@ -4348,6 +4408,8 @@
 
     "remove-trailing-spaces": ["remove-trailing-spaces@1.0.9", "", {}, "sha512-xzG7w5IRijvIkHIjDk65URsJJ7k4J95wmcArY5PRcmjldIOl7oTvG8+X2Ag690R7SfwiOcHrWZKVc1Pp5WIOzA=="],
 
+    "reputation-api": ["reputation-api@workspace:services/reputation-api"],
+
     "require-directory": ["require-directory@2.1.1", "", {}, "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="],
 
     "require-from-string": ["require-from-string@2.0.2", "", {}, "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw=="],
@@ -4385,6 +4447,8 @@
     "rollup-plugin-esbuild": ["rollup-plugin-esbuild@6.2.1", "", { "dependencies": { "debug": "^4.4.0", "es-module-lexer": "^1.6.0", "get-tsconfig": "^4.10.0", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "esbuild": ">=0.18.0", "rollup": "^1.20.0 || ^2.0.0 || ^3.0.0 || ^4.0.0" } }, "sha512-jTNOMGoMRhs0JuueJrJqbW8tOwxumaWYq+V5i+PD+8ecSCVkuX27tGW7BXqDgoULQ55rO7IdNxPcnsWtshz3AA=="],
 
     "rollup-plugin-node-externals": ["rollup-plugin-node-externals@8.1.2", "", { "peerDependencies": { "rollup": "^4.0.0" } }, "sha512-EuB6/lolkMLK16gvibUjikERq5fCRVIGwD2xue/CrM8D0pz5GXD2V6N8IrgxegwbcUoKkUFI8VYCEEv8MMvgpA=="],
+
+    "rpc-proxy": ["rpc-proxy@workspace:services/rpc-proxy"],
 
     "rpc-websockets": ["rpc-websockets@9.3.8", "", { "dependencies": { "@swc/helpers": "^0.5.11", "@types/uuid": "^10.0.0", "@types/ws": "^8.2.2", "buffer": "^6.0.3", "eventemitter3": "^5.0.1", "uuid": "^11.0.0", "ws": "^8.5.0" }, "optionalDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": "^6.0.0" } }, "sha512-7r+fm4tSJmLf9GvZfL1DJ1SJwpagpp6AazqM0FUaeV7CA+7+NYINSk1syWa4tU/6OF2CyBicLtzENGmXRJH6wQ=="],
 
@@ -4861,6 +4925,8 @@
     "wrap-ansi": ["wrap-ansi@6.2.0", "", { "dependencies": { "ansi-styles": "^4.0.0", "string-width": "^4.1.0", "strip-ansi": "^6.0.0" } }, "sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA=="],
 
     "wrappy": ["wrappy@1.0.2", "", {}, "sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ=="],
+
+    "write-relayer": ["write-relayer@workspace:services/write-relayer"],
 
     "ws": ["ws@8.20.0", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA=="],
 

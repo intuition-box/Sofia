@@ -25,11 +25,17 @@ export type MarketPositionKind = 'platform' | 'claim' | 'atom'
 export interface MarketPosition {
   /** Vault term_id the shares sit on (what an exit redeems). */
   termId: string
+  /** Shares per bonding curve (raw strings) — exits without an RPC read */
+  legs: { curveId: string; shares: string }[]
+  /** shares × spot price (wei) — only to correct spot-priced history */
+  markValue: string
   kind: MarketPositionKind
   /** Claims only: support = the claim's vault, oppose = its counter vault. */
   side: 'support' | 'oppose' | null
   /** Claims only: the claim (triple) term_id, whatever the side. */
   claimTermId: string | null
+  /** Claims only: the object atom (the page) the claim points to. */
+  objectTermId: string | null
   /** Page / platform / atom name. */
   title: string
   /** Claims only: the predicate label (e.g. "visits for learning"). */
@@ -92,6 +98,32 @@ function atomUrl(
   return /^https?:\/\//i.test(label) ? label : ''
 }
 
+// ── Valuation ──
+
+/**
+ * What a leg is worth: what exiting it returns (previewRedeem, fees out) when
+ * the caller has it; else the pro-rata share of the vault's assets. Never `shares × spot
+ * price` when the vault totals are known: on a bonding curve your own deposit
+ * lifts the spot price, so that shows gains nobody paid for (a sole holder
+ * would read +20% on day one). Spot only when nothing else is available.
+ */
+function legValue(
+  leg: string,
+  shares: bigint,
+  price: bigint,
+  row: PositionRow,
+  exitValues: Readonly<Record<string, string>>,
+): bigint {
+  const exit = exitValues[leg]
+  if (exit !== undefined) return BigInt(exit)
+  const totalShares = BigInt(row.vault?.total_shares || '0')
+  const totalAssets = BigInt(row.vault?.total_assets || '0')
+  if (totalShares > 0n && totalAssets > 0n) {
+    return (shares * totalAssets) / totalShares
+  }
+  return (shares * price) / WAD
+}
+
 // ── Pure aggregation (exported for tests) ──
 
 /**
@@ -103,6 +135,8 @@ function atomUrl(
 export function aggregateUserPositions(
   rows: readonly PositionRow[],
   platformTermIds: ReadonlySet<string>,
+  /** Exact exit value per leg (`term:curve` → wei), from previewRedeem */
+  exitValues: Readonly<Record<string, string>> = {},
 ): MarketPosition[] {
   const byTerm: Record<
     string,
@@ -114,6 +148,8 @@ export function aggregateUserPositions(
       staked: bigint
       supporters: number
       openedAt: string
+      legs: { curveId: string; shares: string }[]
+      mark: bigint
     }
   > = {}
   // One leg per (term, curve) — offset pagination can repeat a row when a
@@ -135,9 +171,13 @@ export function aggregateUserPositions(
       staked: 0n,
       supporters: 0,
       openedAt: row.created_at,
+      legs: [],
+      mark: 0n,
     })
+    entry.mark += (shares * price) / WAD
+    entry.legs.push({ curveId: String(row.curve_id), shares: String(shares) })
     entry.shares += shares
-    entry.value += (shares * price) / WAD
+    entry.value += legValue(leg, shares, price, row, exitValues)
     entry.deposited += netDeposited(row)
     entry.staked += BigInt(row.vault?.market_cap || '0')
     entry.supporters = Math.max(
@@ -154,6 +194,8 @@ export function aggregateUserPositions(
     const change = e.value - e.deposited
     const base = {
       termId,
+      legs: e.legs,
+      markValue: String(e.mark),
       shares: String(e.shares),
       deposited: String(e.deposited),
       value: String(e.value),
@@ -172,6 +214,7 @@ export function aggregateUserPositions(
         kind: 'claim',
         side: termId === triple.term_id ? 'support' : 'oppose',
         claimTermId: triple.term_id,
+        objectTermId: triple.object?.term_id ?? null,
         title:
           triple.object?.value?.thing?.name || triple.object?.label || 'Claim',
         predicateLabel: triple.predicate?.label ?? null,
@@ -190,6 +233,7 @@ export function aggregateUserPositions(
       kind: platformTermIds.has(termId.toLowerCase()) ? 'platform' : 'atom',
       side: null,
       claimTermId: null,
+      objectTermId: null,
       // The Beta season ended — deposits no longer flow there, but existing
       // shares stay withdrawable from here (Exit).
       title:
@@ -263,6 +307,8 @@ export async function fetchUserPositions(
     if (batch.length < POSITIONS_PAGE) break
     if (page === MAX_PAGES - 1) truncated = true
   }
+  // Pro-rata valuation from the indexer — no RPC read on page load (the
+  // public RPC's per-IP quota is shared with the wallet)
   return {
     positions: aggregateUserPositions(rows, platformTermIds),
     truncated,

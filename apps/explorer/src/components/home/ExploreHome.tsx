@@ -13,6 +13,8 @@ import type { InterestPreset } from './useInterestTiles'
 import HomeSection from './HomeSection'
 import CirclesSection from './CirclesSection'
 import { FEATURES } from '@/config/features'
+import TopVoicesSection from './TopVoicesSection'
+import EarlySignalsSection from '@/components/trending/EarlySignalsSection'
 import { useLastVisit, useMarkVisitedOnMount } from '@/hooks/useLastVisit'
 
 const TOPICS_PREVIEW = 6
@@ -90,6 +92,12 @@ export default function ExploreHome({
           limit={searching || topicsExpanded ? undefined : TOPICS_PREVIEW}
         />
       </HomeSection>
+
+      {/* ── Top voices ─────────────────────────────────────────── */}
+      <TopVoicesSection />
+
+      {/* ── Early signals (Trend Hunter calls of the month) ───── */}
+      <EarlySignalsSection />
 
       {/* ── Circles ────────────────────────────────────────────── */}
       {FEATURES.circles && <CirclesSection />}

@@ -41,6 +41,15 @@ export function contextCartId(certTermId: string, topicSlug: string): string {
   return `context-${certTermId}-${topicSlug}`
 }
 
+/** The slug a context cart id was built from — inverse of contextCartId. */
+export function contextSlugFromCartId(
+  id: string,
+  certTermId: string,
+): string | null {
+  const prefix = `context-${certTermId}-`
+  return id.startsWith(prefix) ? id.slice(prefix.length) || null : null
+}
+
 /**
  * Build a cart item that, once submitted, mints a nested
  * `(cert, in_context_of, topic)` triple. When the context atom already exists

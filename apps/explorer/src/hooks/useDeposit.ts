@@ -34,12 +34,21 @@ export function useDeposit() {
 
   /** Single deposit */
   const deposit = useCallback(
-    async (termId: string, amountTrust: number): Promise<DepositResult> => {
+    async (
+      termId: string,
+      amountTrust: number,
+      curveId?: bigint,
+    ): Promise<DepositResult> => {
       setProcessing(true)
       setTxResult(null)
       try {
         const wallet = requireWallet()
-        const result = await executeSingleDeposit(wallet, termId, amountTrust)
+        const result = await executeSingleDeposit(
+          wallet,
+          termId,
+          amountTrust,
+          curveId,
+        )
         setTxResult(result)
         if (result.success) {
           // Optimistic: flip the per-slug maps so "pending" UI clears
@@ -82,7 +91,7 @@ export function useDeposit() {
     async (items: BatchDepositItem[]): Promise<DepositResult> => {
       if (items.length === 0) return { success: false, error: 'No items' }
       if (items.length === 1)
-        return deposit(items[0].termId, items[0].amountTrust)
+        return deposit(items[0].termId, items[0].amountTrust, items[0].curveId)
 
       setProcessing(true)
       setTxResult(null)

@@ -27,7 +27,7 @@ interface BottomNavItem {
 const ALL_NAV_ITEMS: (BottomNavItem & { enabled?: boolean })[] = [
   { to: '/platforms', label: 'Platforms', icon: LineChart, authRequired: true },
   { to: '/trending', label: 'Trending', icon: Flame },
-  { to: '/positions', label: 'Positions', icon: PieChart },
+  { to: '/positions', label: 'My positions', icon: PieChart },
   { to: '/explore', label: 'Explore', icon: Globe },
   {
     to: '/circles',
