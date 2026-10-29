@@ -26,7 +26,11 @@ function limitParam(raw: string | undefined, fallback: number): number {
  */
 trendHunters.get('/trend-hunters', async (c) => {
   const month = monthParam(c.req.query('month'))
-  const pool = env.trendHunterPool
+  // "YYYY-MM" compares in calendar order
+  const pool =
+    month >= env.trendHunterPool.startMonth
+      ? env.trendHunterPool
+      : { ...env.trendHunterPool, trust: 0 }
   const limit = limitParam(c.req.query('limit'), 10)
   // The shares need the whole Top N, whatever the limit
   const rows = await prisma.trendHunterMonth.findMany({
@@ -44,7 +48,7 @@ trendHunters.get('/trend-hunters', async (c) => {
       calls: r.calls,
       reward: shares.get(r.wallet) ?? null,
     })),
-    pool,
+    pool: { trust: pool.trust, size: pool.size },
     computedAt: rows[0]?.computedAt ?? null,
   })
 })

@@ -33,6 +33,8 @@ export const env = {
   trendHunterPool: {
     trust: Number(process.env.TREND_HUNTER_POOL_TRUST ?? 1000) || 0,
     size: Number(process.env.TREND_HUNTER_POOL_SIZE ?? 10) || 10,
+    /** First month with a pool ("YYYY-MM") — none before it */
+    startMonth: process.env.TREND_HUNTER_POOL_START ?? '2026-11',
   },
   corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
     .split(',')
