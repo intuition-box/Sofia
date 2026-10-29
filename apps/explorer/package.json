@@ -8,8 +8,6 @@
     "@0xsofia/quests": "workspace:*",
     "@0xsofia/reputation": "workspace:*",
     "@0xsofia/taxonomy": "workspace:*",
-    "@dicebear/collection": "^9.0.0",
-    "@dicebear/core": "^9.0.0",
     "@privy-io/react-auth": "^2.0.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -73,7 +71,6 @@
     "@types/three": "^0.180.0",
     "@vitejs/plugin-react-swc": "^3.10.2",
     "happy-dom": "^21.0.4",
-    "msw": "^2.15.0",
     "typescript": "^5.9.3",
     "vite": "6.4.5",
     "vitest": "^4.1.12"

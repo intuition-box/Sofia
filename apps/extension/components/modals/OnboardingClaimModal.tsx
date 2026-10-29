@@ -1,16 +1,18 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
-import { useBalance } from "wagmi"
-import { formatUnits, getAddress } from "viem"
-import SofiaLoader from "../ui/SofiaLoader"
+
 import {
-  useWalletFromStorage,
   useFeeEstimate,
-  useOnboardingClaim
+  useOnboardingClaim,
+  useTrustBalance,
+  useWalletFromStorage
 } from "~/hooks"
 import { EXPLORER_URLS } from "~/lib/config/chainConfig"
-import { getIntentionBadge } from "~/types/intentionCategories"
 import { createHookLogger } from "~/lib/utils"
+import { getIntentionBadge } from "~/types/intentionCategories"
+
+import SofiaLoader from "../ui/SofiaLoader"
+
 import "../styles/OnboardingClaimModal.css"
 
 const logger = createHookLogger("OnboardingClaimModal")
@@ -65,8 +67,9 @@ const OnboardingClaimModal = ({
     storeFirstTxFlag
   } = useOnboardingClaim(url)
 
-  const [selectedWeight, setSelectedWeight] =
-    useState<WeightOption["id"] | null>(null)
+  const [selectedWeight, setSelectedWeight] = useState<
+    WeightOption["id"] | null
+  >(null)
   const [customValue, setCustomValue] = useState("")
   const [processingStep, setProcessingStep] = useState("")
   const [alreadyClaimed, setAlreadyClaimed] = useState(false)
@@ -74,11 +77,7 @@ const OnboardingClaimModal = ({
   const { walletAddress } = useWalletFromStorage()
   const { estimate } = useFeeEstimate()
 
-  const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
-  const { data: balanceData } = useBalance({ address: checksumAddress })
-  const userBalance = balanceData
-    ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
-    : 0
+  const userBalance = useTrustBalance(walletAddress)
 
   // Check if already claimed on mount
   useEffect(() => {
@@ -127,10 +126,12 @@ const OnboardingClaimModal = ({
 
   // Compute cost breakdown
   const breakdown = useMemo(() => {
-    const minimumValue = weightOptions.find((opt) => opt.id === "minimum")!
-      .value!
-    const defaultValue = weightOptions.find((opt) => opt.id === "default")!
-      .value!
+    const minimumValue = weightOptions.find(
+      (opt) => opt.id === "minimum"
+    )!.value!
+    const defaultValue = weightOptions.find(
+      (opt) => opt.id === "default"
+    )!.value!
 
     let totalTrust: number
     if (selectedWeight === null) {
@@ -148,7 +149,7 @@ const OnboardingClaimModal = ({
     const createOpts = { isNewTriple: true, newAtomCount: 1 }
 
     const costEstimate =
-      totalTrust > 0 ? (estimate?.(totalTrust, createOpts) ?? null) : null
+      totalTrust > 0 ? estimate?.(totalTrust, createOpts) ?? null : null
     return {
       totalTrust,
       creationCost: costEstimate?.creationCost ?? 0,
@@ -243,8 +244,7 @@ const OnboardingClaimModal = ({
   // step machine (onboarding-section reveal) and useOnboardingClaim hook.
   return createPortal(
     <div
-      className={`modal-overlay onboarding-claim-overlay ${txLoading ? "processing" : ""}`}
-    >
+      className={`modal-overlay onboarding-claim-overlay ${txLoading ? "processing" : ""}`}>
       <div className="modal-content onboarding-claim-modal">
         <div className="amp b3 b3--v5">
           <div className="b3-bg b3-bg--v5" aria-hidden="true">
@@ -288,8 +288,7 @@ const OnboardingClaimModal = ({
               {/* Step 1+: Triple card */}
               {isFormState && (
                 <div
-                  className={`onboarding-section ${step >= 1 ? "visible" : ""} ${step === 1 ? "highlighted" : ""}`}
-                >
+                  className={`onboarding-section ${step >= 1 ? "visible" : ""} ${step === 1 ? "highlighted" : ""}`}>
                   <div className="weight-modal-triplet-card">
                     <div className="weight-modal-triplet-text">
                       {badge ? (
@@ -298,14 +297,14 @@ const OnboardingClaimModal = ({
                           style={{
                             borderColor: `${badge.color}40`,
                             backgroundColor: `${badge.color}0A`
-                          }}
-                        >
+                          }}>
                           <span className="object">Sofia</span>
-                          <span className="weight-modal-cert-dot">&middot;</span>
+                          <span className="weight-modal-cert-dot">
+                            &middot;
+                          </span>
                           <span
                             className="weight-modal-intention-badge"
-                            style={{ color: badge.color }}
-                          >
+                            style={{ color: badge.color }}>
                             {badge.label}
                           </span>
                         </span>
@@ -324,8 +323,7 @@ const OnboardingClaimModal = ({
               {/* Step 2+: Weight pills */}
               {isFormState && (
                 <div
-                  className={`onboarding-section ${step >= 2 ? "visible" : ""} ${step === 2 ? "highlighted" : ""}`}
-                >
+                  className={`onboarding-section ${step >= 2 ? "visible" : ""} ${step === 2 ? "highlighted" : ""}`}>
                   <div className="weight-modal-amount-row">
                     <input
                       type="number"
@@ -337,8 +335,8 @@ const OnboardingClaimModal = ({
                           : selectedWeight === "custom"
                             ? customValue || ""
                             : weightOptions.find(
-                                  (opt) => opt.id === selectedWeight
-                                )?.value || ""
+                                (opt) => opt.id === selectedWeight
+                              )?.value || ""
                       }
                       onChange={(e) => {
                         setSelectedWeight("custom")
@@ -358,8 +356,7 @@ const OnboardingClaimModal = ({
                           key={option.id}
                           onClick={() => setSelectedWeight(option.id)}
                           className={`weight-modal-pill ${selectedWeight === option.id ? "selected" : ""}`}
-                          disabled={txLoading}
-                        >
+                          disabled={txLoading}>
                           {option.value}
                         </button>
                       ))}
@@ -371,8 +368,7 @@ const OnboardingClaimModal = ({
               {/* Step 4+: Cost ledger (b3) */}
               {isFormState && (
                 <div
-                  className={`onboarding-section ${step >= 4 ? "visible" : ""} ${step === 4 ? "highlighted" : ""}`}
-                >
+                  className={`onboarding-section ${step >= 4 ? "visible" : ""} ${step === 4 ? "highlighted" : ""}`}>
                   <div className="b3-ledger">
                     <div className="b3-ledger-row">
                       <span>Deposit</span>
@@ -389,8 +385,7 @@ const OnboardingClaimModal = ({
                       <span>{formatTrust(breakdown.totalEstimate)} TRUST</span>
                     </div>
                     <div
-                      className={`b3-ledger-row b3-ledger-row--muted ${breakdown.totalEstimate > userBalance ? "weight-modal-insufficient" : ""}`}
-                    >
+                      className={`b3-ledger-row b3-ledger-row--muted ${breakdown.totalEstimate > userBalance ? "weight-modal-insufficient" : ""}`}>
                       <span>Your balance</span>
                       <span>{formatTrust(userBalance)} TRUST</span>
                     </div>
@@ -419,8 +414,7 @@ const OnboardingClaimModal = ({
                           href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="modal-tx-link"
-                        >
+                          className="modal-tx-link">
                           View on Explorer &rarr;
                         </a>
                       )}
@@ -456,8 +450,7 @@ const OnboardingClaimModal = ({
                       <button
                         className="b3-btn b3-btn--primary"
                         onClick={handleSubmit}
-                        disabled={txLoading}
-                      >
+                        disabled={txLoading}>
                         Retry
                       </button>
                     </>
@@ -469,8 +462,7 @@ const OnboardingClaimModal = ({
                           reset()
                           onComplete()
                         }}
-                        disabled={txLoading}
-                      >
+                        disabled={txLoading}>
                         Skip
                       </button>
                       <button
@@ -480,8 +472,7 @@ const OnboardingClaimModal = ({
                           txLoading ||
                           !canContinue ||
                           (step === 5 && breakdown.totalEstimate > userBalance)
-                        }
-                      >
+                        }>
                         {txLoading
                           ? "Processing..."
                           : step === 5

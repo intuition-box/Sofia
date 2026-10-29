@@ -1,6 +1,5 @@
 import { getAddress } from 'viem'
-import { createAvatar } from '@dicebear/core'
-import { glass } from '@dicebear/collection'
+import { seedAvatarDataUri } from '@0xsofia/design-system'
 import { useGetAccountLabelsQuery } from '@0xsofia/graphql'
 
 // Global caches: module-level singletons, saved to localStorage for a day so
@@ -247,10 +246,9 @@ export function getAvatarUrl(addr: string): string {
   const key = addr.toLowerCase()
   const cached = avatarCache.get(key)
   if (cached) return cached
-  // DiceBear fallback — deterministic glass avatar from the address.
+  // Fallback — deterministic generated avatar from the address.
   // Seed on the lowercased address so the SAME wallet renders an identical
   // avatar everywhere (feed, profile, member lists, leaderboard) regardless
   // of the casing the call site happens to pass.
-  const avatar = createAvatar(glass, { seed: key })
-  return avatar.toDataUri()
+  return seedAvatarDataUri(key)
 }

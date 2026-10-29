@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
-import { formatUnits, getAddress } from "viem"
-import { useBalance } from "wagmi"
 
 import {
   PP_FEE_DENOMINATOR,
   useFeeEstimate,
   usePlatformPool,
+  useTrustBalance,
   useWalletFromStorage
 } from "~/hooks"
 import type { ModalTriplet } from "~/hooks"
@@ -134,12 +133,7 @@ const WeightModal = ({
   const { walletAddress } = useWalletFromStorage()
   const { estimate } = useFeeEstimate()
 
-  const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
-  const { data: balanceData } = useBalance({ address: checksumAddress })
-
-  const userBalance = balanceData
-    ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
-    : 0
+  const userBalance = useTrustBalance(walletAddress)
 
   const [removedIndices, setRemovedIndices] = useState<Set<number>>(new Set())
   const [globalWeight, setGlobalWeight] =
@@ -230,7 +224,7 @@ const WeightModal = ({
     }
 
     const costEstimate =
-      totalTrust > 0 ? (estimate?.(totalTrust, createOpts) ?? null) : null
+      totalTrust > 0 ? estimate?.(totalTrust, createOpts) ?? null : null
     const platformPoolAmount =
       costEstimate?.platformPoolAmount ??
       (totalTrust * effectivePP) / PP_FEE_DENOMINATOR
@@ -331,8 +325,7 @@ const WeightModal = ({
   // cart immediately). The reward handoff renders from its own snapshot, so
   // an empty `triplets` must NOT unmount the modal while a success/reward
   // surface is active — only bail when there's genuinely nothing to show.
-  const keepOpenForReward =
-    showSuccessHandoff
+  const keepOpenForReward = showSuccessHandoff
 
   if (!isOpen || (triplets.length === 0 && !keepOpenForReward)) return null
 
@@ -341,8 +334,7 @@ const WeightModal = ({
   // keep their existing markup untouched.
   // Processing stays inside the Amplify ticket (loading overlay below) —
   // we no longer fall back to the legacy dark modal-body during a tx.
-  const showAmpForm =
-    isFormState && !showSuccessHandoff
+  const showAmpForm = isFormState && !showSuccessHandoff
 
   return createPortal(
     <div className={`modal-overlay ${isProcessing ? "processing" : ""}`}>
@@ -354,142 +346,137 @@ const WeightModal = ({
             {successContent}
           </div>
         )}
-        {!showSuccessHandoff &&
-          !showAmpForm && (
-            <>
-              <div className="modal-body">
-                {isFormState && (
-                  <p className="modal-description">
-                    {fixedDeposit != null
-                      ? "Review the cost breakdown before confirming."
-                      : "Set your deposit, review fees and confirm."}
-                  </p>
-                )}
+        {!showSuccessHandoff && !showAmpForm && (
+          <>
+            <div className="modal-body">
+              {isFormState && (
+                <p className="modal-description">
+                  {fixedDeposit != null
+                    ? "Review the cost breakdown before confirming."
+                    : "Set your deposit, review fees and confirm."}
+                </p>
+              )}
 
-                {isFormState && fixedDeposit == null && activeCount > 1 && (
-                  <WeightApplyAllBar
-                    activeCount={activeCount}
-                    globalWeight={globalWeight}
-                    isProcessing={isProcessing}
-                    onApplyAll={handleApplyAll}
-                  />
-                )}
+              {isFormState && fixedDeposit == null && activeCount > 1 && (
+                <WeightApplyAllBar
+                  activeCount={activeCount}
+                  globalWeight={globalWeight}
+                  isProcessing={isProcessing}
+                  onApplyAll={handleApplyAll}
+                />
+              )}
 
-                  <div className="modal-triplets-list">
-                    {triplets.map((triplet, index) => {
-                      if (removedIndices.has(index)) return null
-                      return (
-                        <WeightItem
-                          key={triplet.id}
-                          triplet={triplet}
-                          index={index}
-                          selectedWeight={selectedWeights[index]}
-                          isFormState={isFormState}
-                          isProcessing={isProcessing}
-                          fixedDeposit={fixedDeposit}
-                          showRemoveButton={triplets.length > 1}
-                          canRemove={activeCount > 1}
-                          detectPlatformFromUrl={detectPlatformFromUrl}
-                          onWeightSelect={handleWeightSelection}
-                          onRemove={() => {
-                            setRemovedIndices((prev) =>
-                              new Set(prev).add(index)
-                            )
-                            onRemoveTriplet?.(triplet.id)
-                          }}
-                        />
-                      )
-                    })}
-                  </div>
-
-                {isFormState && curveSelector && (
-                  <div className="curve-selector">
-                    <span className="curve-selector-label">Bonding curve:</span>
-                    <div className="curve-toggle">
-                      <button
-                        className={`curve-toggle-btn ${curveSelector.selected === "linear" ? "active" : ""}`}
-                        onClick={() => curveSelector.onChange("linear")}
-                        disabled={isProcessing}>
-                        Linear
-                      </button>
-                      <button
-                        className={`curve-toggle-btn ${curveSelector.selected === "progressive" ? "active" : ""}`}
-                        onClick={() => curveSelector.onChange("progressive")}
-                        disabled={isProcessing}>
-                        Progressive
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {isFormState && (
-                  <WeightTotal
-                    breakdown={breakdown}
-                    userBalance={userBalance}
-                    hasPlatforms={hasPlatforms}
-                    platformLabel={platformLabel}
-                    fixedDeposit={fixedDeposit}
-                  />
-                )}
-
-                {transactionSuccess && (
-                  <WeightSuccessCard
-                    transactionHash={transactionHash}
-                    createdCount={createdCount}
-                    depositCount={depositCount}
-                    positionBoard={positionBoard}
-                  />
-                )}
-
-                {transactionError && !transactionSuccess && (
-                  <div className="modal-error-section">
-                    <div className="modal-error-icon">❌</div>
-                    <div className="modal-error-text">
-                      <p className="modal-error-title">Transaction Failed</p>
-                      <p className="modal-error-message">
-                        {parseErrorMessage(transactionError)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {isProcessing && !transactionSuccess && (
-                  <>
-                    <div className="modal-processing-section">
-                      <SofiaLoader size={60} />
-                      <div className="modal-processing-text">
-                        <p className="modal-processing-title">Creating</p>
-                        <p className="modal-processing-step">
-                          {processingStep}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="modal-processing-warning">
-                      Do not close or navigate away from this tab
-                    </div>
-                  </>
-                )}
-
-                {isFormState && (
-                  <p className="modal-description">
-                    Position value can go down. Rewards are not guaranteed.
-                  </p>
-                )}
-
-                  <WeightActions
-                    isProcessing={isProcessing}
-                    transactionSuccess={transactionSuccess}
-                    transactionError={transactionError}
-                    submitLabel={submitLabel}
-                    breakdown={breakdown}
-                    userBalance={userBalance}
-                    activeCount={activeCount}
-                    onClose={handleClose}
-                    onSubmit={handleSubmit}
-                  />
+              <div className="modal-triplets-list">
+                {triplets.map((triplet, index) => {
+                  if (removedIndices.has(index)) return null
+                  return (
+                    <WeightItem
+                      key={triplet.id}
+                      triplet={triplet}
+                      index={index}
+                      selectedWeight={selectedWeights[index]}
+                      isFormState={isFormState}
+                      isProcessing={isProcessing}
+                      fixedDeposit={fixedDeposit}
+                      showRemoveButton={triplets.length > 1}
+                      canRemove={activeCount > 1}
+                      detectPlatformFromUrl={detectPlatformFromUrl}
+                      onWeightSelect={handleWeightSelection}
+                      onRemove={() => {
+                        setRemovedIndices((prev) => new Set(prev).add(index))
+                        onRemoveTriplet?.(triplet.id)
+                      }}
+                    />
+                  )
+                })}
               </div>
-            </>
-          )}
+
+              {isFormState && curveSelector && (
+                <div className="curve-selector">
+                  <span className="curve-selector-label">Bonding curve:</span>
+                  <div className="curve-toggle">
+                    <button
+                      className={`curve-toggle-btn ${curveSelector.selected === "linear" ? "active" : ""}`}
+                      onClick={() => curveSelector.onChange("linear")}
+                      disabled={isProcessing}>
+                      Linear
+                    </button>
+                    <button
+                      className={`curve-toggle-btn ${curveSelector.selected === "progressive" ? "active" : ""}`}
+                      onClick={() => curveSelector.onChange("progressive")}
+                      disabled={isProcessing}>
+                      Progressive
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {isFormState && (
+                <WeightTotal
+                  breakdown={breakdown}
+                  userBalance={userBalance}
+                  hasPlatforms={hasPlatforms}
+                  platformLabel={platformLabel}
+                  fixedDeposit={fixedDeposit}
+                />
+              )}
+
+              {transactionSuccess && (
+                <WeightSuccessCard
+                  transactionHash={transactionHash}
+                  createdCount={createdCount}
+                  depositCount={depositCount}
+                  positionBoard={positionBoard}
+                />
+              )}
+
+              {transactionError && !transactionSuccess && (
+                <div className="modal-error-section">
+                  <div className="modal-error-icon">❌</div>
+                  <div className="modal-error-text">
+                    <p className="modal-error-title">Transaction Failed</p>
+                    <p className="modal-error-message">
+                      {parseErrorMessage(transactionError)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {isProcessing && !transactionSuccess && (
+                <>
+                  <div className="modal-processing-section">
+                    <SofiaLoader size={60} />
+                    <div className="modal-processing-text">
+                      <p className="modal-processing-title">Creating</p>
+                      <p className="modal-processing-step">{processingStep}</p>
+                    </div>
+                  </div>
+                  <div className="modal-processing-warning">
+                    Do not close or navigate away from this tab
+                  </div>
+                </>
+              )}
+
+              {isFormState && (
+                <p className="modal-description">
+                  Position value can go down. Rewards are not guaranteed.
+                </p>
+              )}
+
+              <WeightActions
+                isProcessing={isProcessing}
+                transactionSuccess={transactionSuccess}
+                transactionError={transactionError}
+                submitLabel={submitLabel}
+                breakdown={breakdown}
+                userBalance={userBalance}
+                activeCount={activeCount}
+                onClose={handleClose}
+                onSubmit={handleSubmit}
+              />
+            </div>
+          </>
+        )}
 
         {showAmpForm && (
           <WeightAmplifyTicket
@@ -517,7 +504,6 @@ const WeightModal = ({
             onSubmit={handleSubmit}
           />
         )}
-
       </div>
     </div>,
     document.body
