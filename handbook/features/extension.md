@@ -45,6 +45,7 @@ MetaMask Delegation Framework v1.3.0 (`lib/config/delegationConfig.ts`, `lib/sig
 `lib/services/CartService.ts`, IndexedDB `cart_items`, max 40 items (gas cap). One item per page and side; adding a page again merges its tags. **Publish** (`hooks/useCartSubmit.ts`): all items in one `createTriplesBatch` transaction, then votes, then tags.
 
 - Weights: **Light 0.01**, **Medium 0.5** (default), **Strong 1** TRUST. The breakdown shows signal, platform pool, creation cost and fees.
+- Tags are created on curve 1 (`TAG_CURVE_ID`), page claims on curve 2.
 - **Platform pool** (`PlatformPoolService`): 10% by default (0–80%) of a Recommend goes to the page's platform atom, taken out of the stake; only when the domain maps to a platform; skipped under 0.01 TRUST.
 
 ## Echoes
@@ -72,4 +73,4 @@ Bookmark import (seeds Echoes), onboarding tour (coachmarks on the real UI, rest
 
 ## Known leftovers
 
-`ProfileHeader` still has a `totalGold` prop; "Clear all data" still wipes old `*_gold` keys; two hidden Circles tour steps mention Gold; `useGroupAmplify` is exported but unused.
+"Clear all data" still wipes old `*_gold` keys from earlier versions, on purpose.

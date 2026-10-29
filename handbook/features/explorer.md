@@ -58,6 +58,4 @@ See [spotters.md](spotters.md).
 
 ## Known gaps
 
-- **View-as** mode exists (`hooks/useViewAs.ts`) but nothing in the UI turns it on.
-- The exact exit value (`previewRedeem`) is supported by the positions service but no screen passes it; values are pro-rata.
 - `/platforms` reads vault stats with an inline GraphQL query (`GetAtomVaultStats`) instead of a codegen'd one.

@@ -74,7 +74,7 @@ Privy → sofia-dashboard → **Domains** must list `https://sofia.intuition.box
 | `CORS_ORIGINS`                                 | R   | `https://explorer.sofia.intuition.box`                                | `https://staging-explorer.sofia.intuition.box` |
 | `TREND_HUNTER_POOL_TRUST` / `_SIZE` / `_START` | R   | `1000` / `10` / `2026-11`                                             | same                                           |
 
-Scheduled tasks (in the app): daily `0 3 * * *` POST `/internal/leaderboard/compute` and `/internal/trend-hunters/compute`; monthly `0 4 1 * *` the trend-hunters compute with `?month=<previous month>` — commands in `docs/plans/COOLIFY_SETUP.md` (local) or ask Max. Header `x-compute-token: $LEADERBOARD_COMPUTE_TOKEN`.
+Scheduled tasks (in the app): daily `0 3 * * *` (Top Voices + current Spotters month) and monthly `0 4 1 * *` (freeze the previous month). Exact commands: [services/reputation-api/README.md](../../services/reputation-api/README.md#deploy-coolify).
 
 ### rpc-proxy
 

@@ -44,4 +44,4 @@ Tables: `ReputationSnapshot` (replaced each run), `TrendHunterMonth` and `EarlyS
 
 ## Known gaps
 
-- `services/reputation-api/README.md` still mentions an `__overall__` bucket and paging, and omits the Spotters routes.
+- None known.
