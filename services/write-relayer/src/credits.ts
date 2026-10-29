@@ -45,6 +45,8 @@ async function spottedCreditsOf(wallets: readonly string[]): Promise<number> {
   return calls.reduce((sum, n) => sum + n, 0) * env.creditsPerCall
 }
 
+/** A mission done shows up in the quota within this */
+const MISSION_TTL_MS = 2 * 60_000
 const missionCache = new Map<string, { credits: number; at: number }>()
 
 async function cachedMissionCredits(
@@ -52,7 +54,7 @@ async function cachedMissionCredits(
 ): Promise<number> {
   const key = [...wallets].sort().join(',')
   const hit = missionCache.get(key)
-  if (hit && Date.now() - hit.at < TTL_MS) return hit.credits
+  if (hit && Date.now() - hit.at < MISSION_TTL_MS) return hit.credits
   const credits = await missionCreditsOf(wallets).catch((err) => {
     console.warn('[credits] missions unavailable', err)
     return null

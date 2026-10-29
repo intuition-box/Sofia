@@ -1,7 +1,7 @@
 /**
  * FreeRecommendsStrip — atop /trending, where free Recommends are spent: how
  * many are left (today / this month), when today's reset, what spotted pages
- * added, and the way to Spotters to earn more. Logged out: what signing
+ * and missions added, and the way to Spotters to earn more. Logged out: what signing
  * in gives.
  */
 import { Link } from 'react-router-dom'
@@ -53,7 +53,7 @@ export default function FreeRecommendsStrip() {
       </span>
       <span className="th-strip-meta">
         {monthLeft} this month · resets in {countdown(nextUtcDay(now), now)}
-        {quota.credits ? ` · +${quota.credits} from spotted pages` : ''}
+        {quota.credits ? ` · +${quota.credits} earned this month` : ''}
       </span>
       {earnMore}
     </div>

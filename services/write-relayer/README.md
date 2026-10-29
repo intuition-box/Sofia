@@ -44,7 +44,7 @@ POST /sponsor/gas          (Privy)    { wallet? } -> gas for the one-time proxy 
   `MISSION_CREDITS` (`@0xsofia/quests`: 1 per daily mission, 3 per weekly
   one) to both quotas. Checked on-chain with the explorer's own rules (page
   positions ≥ 0.009 TRUST after fees, their claims' backers, topic tags),
-  cached 10 min per account. No claim step.
+  cached 2 min per account. No claim step.
 - Relayer-wide: `SPONSOR_BUDGET_MONTHLY_TRUST` (500) and
   `SPONSOR_BUDGET_DAILY_TRUST` (a 30th of it, 17) — hard stops; the daily one
   keeps a burst of fake accounts from burning the whole month. Each
