@@ -1,11 +1,10 @@
 import { useCallback, useState } from "react"
 
-import { createHookLogger } from "~/lib/utils"
+import { buildPageShareText, createHookLogger, OG_BASE_URL } from "~/lib/utils"
 
 import xIcon from "../ui/social/x.svg"
 
 const logger = createHookLogger("ShareCertificationButton")
-const OG_BASE_URL = "https://og.sofia.intuition.box"
 
 interface ShareCertificationButtonProps {
   pageUrl: string
@@ -49,10 +48,7 @@ const ShareCertificationButton = ({
       // No card (og down): share the page itself, never "undefined"
       const shareUrl = res.ok && json.url ? json.url : pageUrl
 
-      const title = pageTitle || pageUrl
-      const tweetText =
-        `I just Marked "${title}" as ${userStatus}` +
-        ` #${userRank} on @0xSofia`
+      const tweetText = buildPageShareText(pageTitle || pageUrl, userRank)
 
       const intentUrl =
         `https://twitter.com/intent/tweet?text=` +

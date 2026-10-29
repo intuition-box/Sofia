@@ -24,7 +24,12 @@ import { FEATURES } from "~/lib/config/features"
 import { INTENTION_ICONS } from "~/lib/config/intentionIcons"
 import { TOPIC_COLORS, TOPIC_LABELS } from "~/lib/config/topicConfig"
 import type { CartItemRecord } from "~/lib/database"
-import { createHookLogger, getFaviconUrl } from "~/lib/utils"
+import {
+  buildBatchShareText,
+  createHookLogger,
+  getFaviconUrl,
+  OG_BASE_URL
+} from "~/lib/utils"
 import { cartItemVerb, INTENTION_CONFIG } from "~/types/intentionCategories"
 import type { IntentionType } from "~/types/intentionCategories"
 
@@ -40,7 +45,6 @@ const BADGE_IMAGES: Record<UserBadgeTier, string> = {
 }
 
 const logger = createHookLogger("BatchRewardContent")
-const OG_BASE_URL = "https://og.sofia.intuition.box"
 
 /** Leading intention glyph for a feed verb chip — same helper used by the
  *  Trust Circle feed so every verb reads the same across the side panel. */
@@ -143,10 +147,6 @@ const BatchRewardContent = ({
   }, [loading, phase])
 
   const pioneerCount = rewards.filter((r) => r.tier === "Pioneer").length
-  const explorerCount = rewards.filter((r) => r.tier === "Explorer").length
-  const contributorCount = rewards.filter(
-    (r) => r.tier === "Contributor"
-  ).length
 
   const tierCount = (tier: (typeof TIER_ORDER)[number]): number =>
     rewards.filter((r) => r.tier.toLowerCase() === tier).length
@@ -190,21 +190,7 @@ const BatchRewardContent = ({
       const shareUrl =
         res.ok && json.url ? json.url : rewards[0]?.item.url || OG_BASE_URL
 
-      const tierParts: string[] = []
-      if (pioneerCount > 0)
-        tierParts.push(`${pioneerCount} Pioneer${pioneerCount > 1 ? "s" : ""}`)
-      if (explorerCount > 0)
-        tierParts.push(
-          `${explorerCount} Explorer${explorerCount > 1 ? "s" : ""}`
-        )
-      if (contributorCount > 0)
-        tierParts.push(
-          `${contributorCount} Contributor${contributorCount > 1 ? "s" : ""}`
-        )
-
-      const tweetText =
-        `I just Marked ${rewards.length} page${rewards.length > 1 ? "s" : ""} on @0xSofia ` +
-        `(${tierParts.join(", ")})`
+      const tweetText = buildBatchShareText(rewards.length, pioneerCount)
 
       const intentUrl =
         `https://twitter.com/intent/tweet?text=` +

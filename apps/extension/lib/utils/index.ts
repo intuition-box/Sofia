@@ -66,8 +66,6 @@ export {
   sumCertifications
 } from "./certificationHelpers"
 
-
-
 // Fee Calculation
 export { estimateCertificationCost } from "./feeCalculation"
 
@@ -106,3 +104,8 @@ export {
   getExplorerSeasonUrl,
   getProfileUrl
 } from "./sofiaExplorerUrls"
+export {
+  OG_BASE_URL,
+  buildPageShareText,
+  buildBatchShareText
+} from "./shareText"
