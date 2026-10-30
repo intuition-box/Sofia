@@ -7,7 +7,9 @@
   all: initial;
 }
 
-.sis-overlay {
+/* The toast renders outside the overlay, so it needs the tokens too. */
+.sis-overlay,
+.sis-toast {
   /* Mirrors @0xsofia/design-system theme.css [data-theme="dark"]. */
   --sis-bg: #0b0a12;
   --sis-card: #13121f;
@@ -445,6 +447,7 @@
   background: var(--sis-card);
   color: var(--sis-ink);
   border: 1px solid var(--sis-line);
+  font-family: var(--sis-font);
   padding: 11px 18px;
   border-radius: 999px;
   font-size: 13px;
