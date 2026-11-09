@@ -10,11 +10,7 @@
     "typecheck": "bash scripts/typecheck.sh",
     "package": "plasmo package",
     "proxy": "bun sofia-proxy/server.ts",
-    "generate-icons": "node scripts/generate-icons.js",
-    "clear:channels": "tsx background/__test__/clear-channels.ts",
-    "test:persistence": "pnpm clear:channels && tsx background/__test__/test-channel-persistence.ts",
-    "test:messages": "tsx background/__test__/test-message-reception.ts",
-    "test:all": "pnpm clear:channels && tsx background/__test__/test-channel-persistence.ts && tsx background/__test__/test-message-reception.ts"
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@0xsofia/design-system": "workspace:*",
@@ -44,7 +40,6 @@
     "@types/react-dom": "18.3.7",
     "prettier": "3.2.4",
     "sharp": "^0.34.5",
-    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "overrides": {
