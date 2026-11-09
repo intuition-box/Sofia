@@ -1,0 +1,1153 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      color: #0b0b12;
+      background: radial-gradient(
+        ellipse 70% 60% at 50% 38%,
+        #ffffff 0%,
+        #f3f4f7 50%,
+        #e3e5eb 100%
+      );
+    }
+    .h {
+      position: absolute;
+      font-size: 120px;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.02;
+      white-space: nowrap;
+    }
+    .w {
+      display: inline-block;
+    }
+    .quiet {
+      color: #b4b5bf;
+    }
+
+    #t1 {
+      left: 200px;
+      top: 290px;
+    }
+    #t1-ink {
+      color: transparent;
+      background: linear-gradient(
+        100deg,
+        #0b0b12 0%,
+        #0b0b12 42%,
+        #9a9ba6 50%,
+        #0b0b12 58%,
+        #0b0b12 100%
+      );
+      background-size: 300% 100%;
+      background-position: 100% 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    #cam {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: 0 0;
+    }
+    #win {
+      position: absolute;
+      left: 240px;
+      top: 64px;
+      width: 1440px;
+      height: 952px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow:
+        0 0 0 1px rgba(10, 12, 30, 0.07),
+        0 2px 4px rgba(10, 12, 30, 0.05),
+        0 28px 60px -18px rgba(16, 18, 40, 0.26),
+        0 90px 160px -60px rgba(16, 18, 40, 0.32);
+    }
+    #win-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(#f7f7f9, #eeeef2);
+      border-bottom: 1px solid #dcdce2;
+    }
+    #lights {
+      position: absolute;
+      left: 20px;
+      top: 19px;
+      display: flex;
+      gap: 8px;
+    }
+    #lights i {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      display: block;
+    }
+    #win-url {
+      position: absolute;
+      left: 420px;
+      top: 11px;
+      width: 600px;
+      height: 30px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #e1e1e6;
+      font:
+        500 16px/28px 'Inter',
+        sans-serif;
+      color: #3c3c43;
+      text-align: center;
+    }
+    #win-page {
+      position: absolute;
+      left: 0;
+      top: 52px;
+      width: 1440px;
+      height: 900px;
+    }
+    .sheen-box {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    #win-sheen,
+    #card-sheen {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+    }
+    #win-sheen {
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.5) 50%,
+        transparent 70%
+      );
+    }
+    #card-sheen {
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 70%
+      );
+    }
+
+    .menu {
+      position: absolute;
+      width: 360px;
+      padding: 6px;
+      border-radius: 12px;
+      background: rgba(246, 246, 248, 0.9);
+      backdrop-filter: blur(28px) saturate(1.6);
+      box-shadow:
+        0 0 0 0.5px rgba(0, 0, 0, 0.14),
+        0 10px 30px rgba(10, 12, 30, 0.22),
+        0 1px 0 rgba(255, 255, 255, 0.8) inset;
+      font:
+        500 28px 'Inter',
+        sans-serif;
+      color: #1d1d22;
+      opacity: 0;
+      transform-origin: 0 0;
+    }
+    #menu {
+      left: 620px;
+      top: 470px;
+    }
+    #submenu {
+      left: 982px;
+      top: 576px;
+    }
+    .mi {
+      position: relative;
+      height: 50px;
+      padding: 0 14px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .mi b {
+      margin-left: auto;
+      font-weight: 500;
+      opacity: 0.55;
+    }
+    .mi img {
+      width: 30px;
+      height: 30px;
+    }
+    .msep {
+      height: 1px;
+      background: rgba(0, 0, 0, 0.1);
+      margin: 6px 10px;
+    }
+    .hov {
+      position: absolute;
+      inset: 0;
+      border-radius: 7px;
+      background: #0a64ff;
+      opacity: 0;
+    }
+    .mi span,
+    .mi b,
+    .mi img {
+      position: relative;
+    }
+    .lab-on {
+      position: absolute;
+      left: 14px;
+      color: #fff;
+      opacity: 0;
+    }
+
+    #toast {
+      position: absolute;
+      left: 980px;
+      top: 236px;
+      height: 104px;
+      padding: 0 34px 0 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow:
+        0 0 0 1px rgba(10, 12, 30, 0.06),
+        0 18px 40px -12px rgba(16, 18, 40, 0.3);
+      opacity: 0;
+    }
+    #toast img {
+      width: 56px;
+      height: 56px;
+    }
+    .t-1 {
+      font-weight: 600;
+      font-size: 34px;
+      line-height: 1.1;
+    }
+    .t-2 {
+      font:
+        500 28px 'Inter',
+        sans-serif;
+      color: #6e6e78;
+    }
+
+    .cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 64px;
+      height: 64px;
+      filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.28));
+      transform-origin: 0 0;
+    }
+
+    #t2 {
+      left: 200px;
+      top: 420px;
+    }
+
+    #card {
+      position: absolute;
+      left: 270px;
+      top: 225px;
+      width: 1380px;
+      padding: 56px 64px 60px;
+      border-radius: 34px;
+      background: #13121f;
+      color: #f5f3ff;
+      overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.09),
+        0 0 0 1px rgba(10, 12, 30, 0.25),
+        0 30px 70px -20px rgba(16, 18, 40, 0.45),
+        0 110px 180px -70px rgba(16, 18, 40, 0.5);
+      display: grid;
+      gap: 46px;
+      transform-origin: 50% 50%;
+    }
+    #card-light {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 220px;
+      background: radial-gradient(
+        ellipse 60% 100% at 30% 0%,
+        rgba(255, 255, 255, 0.07),
+        transparent 70%
+      );
+    }
+    .ch {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .fav {
+      width: 116px;
+      height: 116px;
+      border-radius: 26px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .fav img {
+      width: 116px;
+      height: 116px;
+      display: block;
+    }
+    .ct {
+      font-size: 76px;
+      font-weight: 700;
+      line-height: 1.04;
+      letter-spacing: -0.01em;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 400;
+    }
+    .chost {
+      font-size: 34px;
+      color: #8f8ca8;
+    }
+    .ctag {
+      margin-left: auto;
+      align-self: flex-start;
+      font-size: 28px;
+      letter-spacing: 0.08em;
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.14);
+      padding: 6px 18px;
+      border-radius: 9px;
+    }
+    .stats {
+      position: relative;
+      display: flex;
+      gap: 100px;
+    }
+    .stat {
+      opacity: 0;
+    }
+    .sv {
+      font-size: 80px;
+      font-weight: 700;
+      line-height: 1.04;
+    }
+    .sl {
+      font-size: 28px;
+      letter-spacing: 0.08em;
+      color: #8f8ca8;
+      margin-top: 6px;
+    }
+    .green {
+      color: #22c55e;
+    }
+    .first {
+      position: relative;
+      display: grid;
+      gap: 18px;
+    }
+    #first-l {
+      opacity: 0;
+      margin-top: 0;
+    }
+    .frow {
+      display: flex;
+      gap: 52px;
+    }
+    .addr {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 34px;
+      opacity: 0;
+    }
+    .addr img {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+    }
+
+    #field {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    #field-in {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    .mini {
+      position: absolute;
+      width: 400px;
+      height: 200px;
+      padding: 28px 30px;
+      border-radius: 24px;
+      background: #13121f;
+      color: #f5f3ff;
+      display: grid;
+      align-content: space-between;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 18px 40px -16px rgba(16, 18, 40, 0.4);
+      opacity: 0;
+    }
+    .mini .row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .mini img {
+      width: 60px;
+      height: 60px;
+      border-radius: 14px;
+    }
+    .mini .n {
+      font-size: 34px;
+      font-weight: 600;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .mini .s {
+      font-size: 28px;
+      color: #8f8ca8;
+    }
+    #m-photo {
+      box-shadow:
+        0 0 0 4px #ffc6b0,
+        0 18px 40px -16px rgba(16, 18, 40, 0.4);
+    }
+
+    #t3 {
+      left: 112px;
+      top: 120px;
+      font-size: 104px;
+    }
+    #t4 {
+      left: 200px;
+      top: 350px;
+    }
+
+    #end {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    #lock {
+      position: absolute;
+      left: 0;
+      top: 250px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+    }
+    #lock-logo {
+      width: 170px;
+      height: 170px;
+    }
+    #lock-word {
+      font-size: 160px;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1;
+      color: transparent;
+      background: linear-gradient(
+        100deg,
+        #0b0b12 0%,
+        #0b0b12 42%,
+        #9a9ba6 50%,
+        #0b0b12 58%,
+        #0b0b12 100%
+      );
+      background-size: 300% 100%;
+      background-position: 100% 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+      padding-bottom: 12px;
+    }
+    #end-tag {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      top: 500px;
+      text-align: center;
+      font-size: 56px;
+      font-weight: 500;
+      color: #4a4b55;
+      letter-spacing: -0.01em;
+    }
+    #end-btn {
+      position: absolute;
+      left: 50%;
+      top: 640px;
+      width: 440px;
+      margin-left: -220px;
+      height: 120px;
+      border-radius: 60px;
+      background: #0b0b12;
+      color: #fff;
+      font-size: 44px;
+      font-weight: 600;
+      display: grid;
+      place-items: center;
+    }
+    #end-legal {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      top: 900px;
+      text-align: center;
+      font:
+        500 28px 'Inter',
+        sans-serif;
+      color: #8a8b95;
+    }
+  </style>
+
+  <div
+    id="root"
+    data-composition-id="film"
+    data-width="1920"
+    data-height="1080"
+    data-layout-allow-overlap
+    data-layout-allow-overflow
+  >
+    <div
+      id="t1"
+      class="h clip"
+      data-start="0"
+      data-duration="2.7"
+      data-track-index="1"
+    >
+      <span id="t1-ink">Some pages<br />are worth keeping.</span>
+    </div>
+
+    <div
+      id="cam"
+      class="clip"
+      data-start="2.2"
+      data-duration="8.7"
+      data-track-index="2"
+    >
+      <div id="win">
+        <img
+          id="win-page"
+          src="assets/v2/wiki-photography.png"
+          alt="Wikipedia article: Photography"
+        />
+        <div id="win-bar">
+          <div id="lights">
+            <i style="background: #ff5f57"></i
+            ><i style="background: #febc2e"></i
+            ><i style="background: #28c840"></i>
+          </div>
+          <div id="win-url">en.wikipedia.org/wiki/Photography</div>
+        </div>
+        <div class="sheen-box"><div id="win-sheen"></div></div>
+        <div id="menu" class="menu">
+          <div class="mi"><span>Back</span></div>
+          <div class="mi"><span>Reload</span></div>
+          <div class="msep"></div>
+          <div class="mi">
+            <i id="hov-sofia" class="hov"></i
+            ><img src="assets/logo_invert.png" alt="" /><span id="lbl-sofia"
+              >Sofia</span
+            ><b>›</b>
+          </div>
+          <div class="mi"><span>Inspect</span></div>
+        </div>
+        <div id="submenu" class="menu">
+          <div class="mi"><span>Add to Sofia…</span></div>
+          <div class="mi">
+            <i id="hov-rec" class="hov"></i><span id="lbl-rec">Recommend</span>
+          </div>
+          <div class="mi"><span>Recommend for…</span><b>›</b></div>
+          <div class="mi"><span>Distrust</span></div>
+        </div>
+        <div id="toast">
+          <img src="assets/logo_invert.png" alt="" />
+          <div>
+            <div class="t-1">Recommended</div>
+            <div class="t-2">Photography</div>
+          </div>
+        </div>
+        <svg id="cursor1" class="cursor" viewBox="0 0 24 24">
+          <path
+            d="M4 2.5 L4 19.5 L8.6 15.3 L11.6 21.8 L14.4 20.6 L11.4 14.2 L17.6 14 Z"
+            fill="#000"
+            stroke="#fff"
+            stroke-width="1.3"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <div
+      id="t2"
+      class="h clip"
+      data-start="7.6"
+      data-duration="2.3"
+      data-track-index="3"
+    >
+      <span id="t2-a" class="w">Right-click.</span>
+      <span id="t2-b" class="w quiet">Recommend.</span>
+    </div>
+
+    <div
+      id="card"
+      class="clip"
+      data-start="9.9"
+      data-duration="7"
+      data-track-index="4"
+    >
+      <div id="card-light"></div>
+      <div class="sheen-box"><div id="card-sheen"></div></div>
+      <div class="ch">
+        <div class="fav">
+          <img src="assets/v2/fav-photography.png" alt="" />
+        </div>
+        <div>
+          <div class="ct">Photography</div>
+          <div class="chost mono">en.wikipedia.org</div>
+        </div>
+        <div class="ctag mono">RECOMMEND</div>
+      </div>
+      <div class="stats">
+        <div id="st-people" class="stat">
+          <div class="sv green">+2</div>
+          <div class="sl mono">PEOPLE · 7D</div>
+        </div>
+        <div id="st-supp" class="stat">
+          <div id="st-supp-v" class="sv">50</div>
+          <div class="sl mono">SUPPORTERS</div>
+        </div>
+        <div id="st-staked" class="stat">
+          <div class="sv">2.67 T</div>
+          <div class="sl mono">STAKED</div>
+        </div>
+      </div>
+      <div class="first">
+        <div id="first-l" class="sl mono">FIRST TO SIGNAL</div>
+        <div class="frow">
+          <div id="a1" class="addr mono">
+            <img src="assets/v2/photo-avatar1.png" alt="" />0x6495...48Cb
+          </div>
+          <div id="a2" class="addr mono">
+            <img src="assets/v2/photo-avatar2.png" alt="" />lonhwick.eth
+          </div>
+          <div id="a3" class="addr mono">
+            <img src="assets/v2/photo-avatar3.png" alt="" />0xf500...6a19
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="field"
+      class="clip"
+      data-start="16.2"
+      data-duration="7.3"
+      data-track-index="5"
+    >
+      <div id="field-in">
+        <div id="m1" class="mini" style="left: 112px; top: 330px">
+          <div class="row">
+            <img src="assets/v2/fav-youtube-music.png" alt="" />
+            <div class="n">YouTube Music</div>
+          </div>
+          <div class="s mono">100+ supporters</div>
+        </div>
+        <div id="m2" class="mini" style="left: 544px; top: 330px">
+          <div class="row">
+            <img src="assets/v2/fav-duolingo.png" alt="" />
+            <div class="n">Duolingo</div>
+          </div>
+          <div class="s mono">101+ supporters</div>
+        </div>
+        <div id="m3" class="mini" style="left: 976px; top: 330px">
+          <div class="row">
+            <img src="assets/v2/fav-telegram.png" alt="" />
+            <div class="n">Telegram</div>
+          </div>
+          <div class="s mono">99+ supporters</div>
+        </div>
+        <div id="m4" class="mini" style="left: 1408px; top: 330px">
+          <div class="row">
+            <img src="assets/v2/fav-notion.png" alt="" />
+            <div class="n">Notion</div>
+          </div>
+          <div class="s mono">100+ supporters</div>
+        </div>
+        <div id="m5" class="mini" style="left: 112px; top: 562px">
+          <div class="row">
+            <img src="assets/v2/fav-claude.png" alt="" />
+            <div class="n">Claude</div>
+          </div>
+          <div class="s mono">99+ supporters</div>
+        </div>
+        <div id="m-photo" class="mini" style="left: 544px; top: 562px">
+          <div class="row">
+            <img src="assets/v2/fav-photography.png" alt="" />
+            <div class="n">Photography</div>
+          </div>
+          <div class="s mono">50 supporters</div>
+        </div>
+        <div id="m7" class="mini" style="left: 976px; top: 562px">
+          <div class="row">
+            <img src="assets/v2/fav-spotify.png" alt="" />
+            <div class="n">Spotify</div>
+          </div>
+          <div class="s mono">100+ supporters</div>
+        </div>
+        <div id="m8" class="mini" style="left: 1408px; top: 562px">
+          <div class="row">
+            <img src="assets/v2/fav-granola.png" alt="" />
+            <div class="n">Granola</div>
+          </div>
+          <div class="s mono">46 supporters</div>
+        </div>
+        <div id="m9" class="mini" style="left: 112px; top: 794px">
+          <div class="row">
+            <img src="assets/v2/fav-chatgpt.png" alt="" />
+            <div class="n">ChatGPT</div>
+          </div>
+          <div class="s mono">99+ supporters</div>
+        </div>
+        <div id="m10" class="mini" style="left: 544px; top: 794px">
+          <div class="row">
+            <img src="assets/v2/fav-strava.png" alt="" />
+            <div class="n">Strava</div>
+          </div>
+          <div class="s mono">100+ supporters</div>
+        </div>
+        <div id="m11" class="mini" style="left: 976px; top: 794px">
+          <div class="row">
+            <img src="assets/v2/fav-gemini.png" alt="" />
+            <div class="n">Gemini</div>
+          </div>
+          <div class="s mono">67 supporters</div>
+        </div>
+        <div id="m12" class="mini" style="left: 1408px; top: 794px">
+          <div class="row">
+            <img src="assets/v2/fav-nike-run-club.png" alt="" />
+            <div class="n">Nike Run Club</div>
+          </div>
+          <div class="s mono">100+ supporters</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="t3"
+      class="h clip"
+      data-start="16.8"
+      data-duration="3.1"
+      data-track-index="6"
+    >
+      <span class="w t3w">Together,</span> <span class="w t3w">a</span>
+      <span class="w t3w">map</span> <span class="w t3w">of</span>
+      <span class="w t3w">the</span> <span class="w t3w">web.</span>
+    </div>
+
+    <div
+      id="t4"
+      class="h clip"
+      data-start="19.9"
+      data-duration="3.5"
+      data-track-index="7"
+    >
+      <span class="w t4w">Recommend</span> <span class="w t4w">pages</span>
+      <span class="w t4w">for</span> <span class="w t4w">free,</span><br /><span
+        class="w t4w"
+        >every</span
+      >
+      <span class="w t4w">month.</span>
+    </div>
+
+    <div
+      id="end"
+      class="clip"
+      data-start="23.2"
+      data-duration="6.8"
+      data-track-index="8"
+    >
+      <div id="lock">
+        <img id="lock-logo" src="assets/logo_invert.png" alt="Sofia" />
+        <div id="lock-word">Sofia</div>
+      </div>
+      <div id="end-tag">Mark the web with one click.</div>
+      <div id="end-btn">Add to Chrome</div>
+      <div id="end-legal">
+        Position value can go down. Rewards are not guaranteed.
+      </div>
+    </div>
+
+    <svg
+      id="cursor2"
+      class="cursor clip"
+      data-start="25.2"
+      data-duration="4.8"
+      data-track-index="9"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M4 2.5 L4 19.5 L8.6 15.3 L11.6 21.8 L14.4 20.6 L11.4 14.2 L17.6 14 Z"
+        fill="#000"
+        stroke="#fff"
+        stroke-width="1.3"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true })
+    const arrive = 'expo.out'
+    const cam = 'power2.inOut'
+    const press = (sel, t) => {
+      tl.to(sel, { scale: 0.88, duration: 0.07, ease: 'power1.out' }, t)
+      tl.to(sel, { scale: 1, duration: 0.22, ease: arrive }, t + 0.07)
+    }
+
+    // 0.0 - 2.6 : the opening line, light passing across it
+    tl.fromTo(
+      '#t1-ink',
+      { backgroundPosition: '100% 0' },
+      { backgroundPosition: '0% 0', duration: 1.6, ease: 'power1.inOut' },
+      0.3,
+    )
+    tl.to(
+      '#t1',
+      { opacity: 0, filter: 'blur(10px)', duration: 0.3, ease: 'power2.in' },
+      2.35,
+    )
+
+    // 2.2 - 7.6 : the window, the light, the right-click
+    tl.set('#cam', { scale: 0.84, x: 153.6, y: 86.4 }, 2.2)
+    tl.fromTo('#win', { y: 760 }, { y: 0, duration: 1.3, ease: arrive }, 2.25)
+    tl.fromTo(
+      '#win-sheen',
+      { x: 0 },
+      { x: 2880, duration: 1.2, ease: 'power1.inOut' },
+      3.0,
+    )
+    tl.to(
+      '#cam',
+      { scale: 1.18, x: -385, y: -196, duration: 1.4, ease: cam },
+      3.7,
+    )
+    tl.set('#cursor1', { x: 1500, y: 980 }, 2.2)
+    tl.to('#cursor1', { x: 620, y: 470, duration: 1.0, ease: cam }, 4.2)
+    press('#cursor1', 5.25)
+    tl.fromTo(
+      '#menu',
+      { opacity: 0, scale: 0.96, filter: 'blur(4px)' },
+      {
+        opacity: 1,
+        scale: 1,
+        filter: 'blur(0px)',
+        duration: 0.28,
+        ease: arrive,
+      },
+      5.3,
+    )
+    tl.to('#cursor1', { x: 720, y: 614, duration: 0.5, ease: cam }, 5.45)
+    tl.to('#hov-sofia', { opacity: 1, duration: 0.12 }, 5.88)
+    tl.to('#lbl-sofia', { color: '#ffffff', duration: 0.12 }, 5.88)
+    tl.fromTo(
+      '#submenu',
+      { opacity: 0, scale: 0.96, filter: 'blur(4px)' },
+      {
+        opacity: 1,
+        scale: 1,
+        filter: 'blur(0px)',
+        duration: 0.28,
+        ease: arrive,
+      },
+      5.98,
+    )
+    tl.to('#cursor1', { x: 1160, y: 657, duration: 0.5, ease: cam }, 6.25)
+    tl.to('#hov-rec', { opacity: 1, duration: 0.12 }, 6.7)
+    tl.to('#lbl-rec', { color: '#ffffff', duration: 0.12 }, 6.7)
+    press('#cursor1', 7.1)
+    tl.to(
+      '#menu, #submenu',
+      { opacity: 0, duration: 0.2, ease: 'power1.in' },
+      7.18,
+    )
+    tl.fromTo(
+      '#toast',
+      { opacity: 0, y: -24 },
+      { opacity: 1, y: 0, duration: 0.7, ease: arrive },
+      7.25,
+    )
+
+    // 7.6 - 9.9 : rack focus to the line
+    tl.to(
+      '#cam',
+      { filter: 'blur(14px)', opacity: 0.55, duration: 0.6, ease: cam },
+      7.75,
+    )
+    tl.fromTo(
+      '#t2-a',
+      { opacity: 0, filter: 'blur(8px)' },
+      { opacity: 1, filter: 'blur(0px)', duration: 0.25, ease: arrive },
+      8.0,
+    )
+    tl.fromTo(
+      '#t2-b',
+      { opacity: 0, filter: 'blur(8px)' },
+      { opacity: 1, filter: 'blur(0px)', duration: 0.25, ease: arrive },
+      8.3,
+    )
+    tl.to(
+      '#t2-b',
+      { color: '#0b0b12', duration: 0.35, ease: 'power1.inOut' },
+      8.75,
+    )
+    tl.to(
+      '#t2',
+      { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power2.in' },
+      9.55,
+    )
+
+    // 9.7 - 16.2 : the page gives way to its card
+    tl.to(
+      '#cam',
+      { scale: 0.6, x: 384, y: 216, duration: 1.0, ease: cam },
+      9.75,
+    )
+    tl.to('#cam', { opacity: 0, duration: 0.45, ease: 'power1.in' }, 9.75)
+    tl.fromTo(
+      '#card',
+      { opacity: 0, scale: 0.7, filter: 'blur(4px)' },
+      { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.9, ease: cam },
+      10.05,
+    )
+    tl.fromTo(
+      '#card-sheen',
+      { x: 0 },
+      { x: 2760, duration: 1.3, ease: 'power1.inOut' },
+      11.0,
+    )
+    tl.fromTo(
+      '#st-people',
+      { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.7, ease: arrive },
+      11.4,
+    )
+    tl.fromTo(
+      '#st-supp',
+      { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.7, ease: arrive },
+      11.85,
+    )
+    const supp = { v: 0 }
+    tl.fromTo(
+      supp,
+      { v: 0 },
+      {
+        v: 50,
+        duration: 0.9,
+        ease: 'power2.out',
+        onUpdate: () => {
+          const el = document.getElementById('st-supp-v')
+          if (el) el.textContent = String(Math.round(supp.v))
+        },
+      },
+      11.85,
+    )
+    tl.fromTo(
+      '#st-staked',
+      { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.7, ease: arrive },
+      12.35,
+    )
+    tl.fromTo(
+      '#first-l',
+      { opacity: 0 },
+      { opacity: 1, duration: 0.5, ease: arrive },
+      13.4,
+    )
+    tl.fromTo(
+      '#a1',
+      { opacity: 0, x: -14 },
+      { opacity: 1, x: 0, duration: 0.7, ease: arrive },
+      13.6,
+    )
+    tl.fromTo(
+      '#a2',
+      { opacity: 0, x: -14 },
+      { opacity: 1, x: 0, duration: 0.7, ease: arrive },
+      13.8,
+    )
+    tl.fromTo(
+      '#a3',
+      { opacity: 0, x: -14 },
+      { opacity: 1, x: 0, duration: 0.7, ease: arrive },
+      14.0,
+    )
+
+    // 16.0 - 19.9 : the card settles into the field
+    tl.to(
+      '#card',
+      { x: -216, y: 160, scale: 0.29, duration: 1.1, ease: cam },
+      16.0,
+    )
+    tl.to('#card', { opacity: 0, duration: 0.3, ease: 'power1.inOut' }, 16.8)
+    tl.fromTo(
+      '#m-photo',
+      { opacity: 0 },
+      { opacity: 1, duration: 0.3, ease: 'power1.inOut' },
+      16.75,
+    )
+    const others = [
+      '#m1',
+      '#m2',
+      '#m3',
+      '#m4',
+      '#m5',
+      '#m7',
+      '#m8',
+      '#m9',
+      '#m10',
+      '#m11',
+      '#m12',
+    ]
+    others.forEach((id, i) => {
+      tl.fromTo(
+        id,
+        { opacity: 0, scale: 0.94, filter: 'blur(6px)' },
+        {
+          opacity: 1,
+          scale: 1,
+          filter: 'blur(0px)',
+          duration: 0.8,
+          ease: arrive,
+        },
+        16.5 + i * 0.07,
+      )
+    })
+    tl.fromTo(
+      '#field-in',
+      { x: 0 },
+      { x: -36, duration: 7.3, ease: 'none' },
+      16.2,
+    )
+    tl.fromTo(
+      '.t3w',
+      { color: '#d6d7de' },
+      { color: '#0b0b12', duration: 0.3, ease: 'power1.inOut', stagger: 0.09 },
+      16.95,
+    )
+    tl.to(
+      '#t3',
+      { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power2.in' },
+      19.6,
+    )
+
+    // 19.9 - 23.4 : rack focus, free every month
+    tl.to(
+      '#field',
+      { filter: 'blur(16px)', opacity: 0.35, duration: 0.6, ease: cam },
+      19.7,
+    )
+    tl.fromTo(
+      '.t4w',
+      { opacity: 0, filter: 'blur(8px)' },
+      {
+        opacity: 1,
+        filter: 'blur(0px)',
+        duration: 0.2,
+        ease: arrive,
+        stagger: 0.08,
+      },
+      20.1,
+    )
+    tl.to(
+      '#t4',
+      { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power2.in' },
+      23.0,
+    )
+    tl.to('#field', { opacity: 0, duration: 0.4, ease: 'power1.in' }, 23.0)
+
+    // 23.2 - 30.0 : the end
+    tl.fromTo(
+      '#lock-logo',
+      { opacity: 0, scale: 0.9 },
+      { opacity: 1, scale: 1, duration: 0.9, ease: arrive },
+      23.4,
+    )
+    tl.fromTo(
+      '#lock-word',
+      { clipPath: 'inset(0 100% 0 0)' },
+      { clipPath: 'inset(0 0% 0 0)', duration: 0.8, ease: 'power3.out' },
+      23.75,
+    )
+    tl.fromTo(
+      '#lock-word',
+      { backgroundPosition: '100% 0' },
+      { backgroundPosition: '0% 0', duration: 1.4, ease: 'power1.inOut' },
+      24.4,
+    )
+    tl.fromTo(
+      '#end-tag',
+      { opacity: 0, filter: 'blur(6px)' },
+      { opacity: 1, filter: 'blur(0px)', duration: 0.5, ease: arrive },
+      24.5,
+    )
+    tl.fromTo(
+      '#end-btn',
+      { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.8, ease: arrive },
+      25.0,
+    )
+    tl.set('#cursor2', { x: 1560, y: 1120 }, 25.2)
+    tl.to('#cursor2', { x: 1000, y: 712, duration: 0.9, ease: cam }, 25.3)
+    press('#cursor2', 26.3)
+    tl.to('#end-btn', { scale: 0.97, duration: 0.07, ease: 'power1.out' }, 26.3)
+    tl.to('#end-btn', { scale: 1, duration: 0.3, ease: arrive }, 26.37)
+    tl.to(
+      '#end-btn',
+      {
+        backgroundColor: '#ffc6b0',
+        color: '#0b0b12',
+        duration: 0.35,
+        ease: 'power1.inOut',
+      },
+      26.35,
+    )
+    tl.fromTo(
+      '#end-legal',
+      { opacity: 0 },
+      { opacity: 1, duration: 0.6, ease: arrive },
+      26.8,
+    )
+
+    window.__timelines['film'] = tl
+  </script>
+</template>
