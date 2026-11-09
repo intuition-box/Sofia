@@ -140,6 +140,10 @@ Both run in the background (202). Follow the service logs; the credibility calls
 
 ## Checks before a commit
 
+`bun run ci` runs exactly what CI runs: Prettier, GraphQL codegen, the typecheck of every workspace and the explorer tests. The same command runs on every `git push` through `.githooks/pre-push`, installed by `bun install`. The hook first syncs `node_modules` with `bun.lock`, because a stale install is the usual reason a check passes locally and fails in CI. To skip it once: `SKIP_CI_CHECK=1 git push`.
+
+One workspace at a time:
+
 ```bash
 # explorer (run from apps/explorer)
 bun ./node_modules/typescript/bin/tsc --noEmit -p .

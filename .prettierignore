@@ -30,3 +30,6 @@ apps/blog/src/content/posts/
 
 # vendored agent skills (installed with `npx skills add`)
 .agents/skills/
+
+# Google Search Console verification files: must stay byte-exact
+**/public/google*.html

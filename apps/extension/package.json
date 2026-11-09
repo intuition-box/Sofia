@@ -41,7 +41,7 @@
     "@types/chrome": "0.0.258",
     "@types/node": "20.11.5",
     "@types/react": "18.2.48",
-    "@types/react-dom": "18.2.18",
+    "@types/react-dom": "18.3.7",
     "prettier": "3.2.4",
     "sharp": "^0.34.5",
     "tsx": "^4.20.6",

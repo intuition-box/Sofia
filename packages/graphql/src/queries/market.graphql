@@ -517,11 +517,7 @@ query GetUserHeldPageClaims(
 # two support positions and who opposed them — the explorer's sorting queue
 # keeps those exactly one account recommended (pages waiting for a second
 # opinion).
-query GetFreshPageClaims(
-  $subjectId: String!
-  $limit: Int!
-  $offset: Int!
-) {
+query GetFreshPageClaims($subjectId: String!, $limit: Int!, $offset: Int!) {
   triples(
     where: {
       subject_id: { _eq: $subjectId }
