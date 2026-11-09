@@ -186,6 +186,9 @@ function toast(
 
 /** Readable tail of a wrapped error ("Batch creation failed: X" → "X") */
 const readableError = (message: string) => {
+  if (/exceeds the balance|insufficient funds/i.test(message)) {
+    return "Not enough TRUST in your wallet"
+  }
   const firstLine = message.split("\n")[0]
   const parts = firstLine.split("failed: ")
   return parts[parts.length - 1] || "Publish failed — try again"

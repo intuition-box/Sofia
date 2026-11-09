@@ -1,5 +1,4 @@
-import { createAvatar } from '@dicebear/core'
-import { glass } from '@dicebear/collection'
+import { seedAvatarDataUri } from "@0xsofia/design-system"
 
 /**
  * Vérifie si une URL est valide pour une image
@@ -8,10 +7,10 @@ import { glass } from '@dicebear/collection'
 export function isValidImageUrl(url: string | undefined | null): boolean {
   if (!url) return false
   return (
-    url.startsWith('http://') ||
-    url.startsWith('https://') ||
-    url.startsWith('ipfs://') ||
-    url.startsWith('data:image/')
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("ipfs://") ||
+    url.startsWith("data:image/")
   )
 }
 
@@ -40,10 +39,7 @@ export function shouldShowDiceBearAvatar(
  * Retourne un Data URI directement utilisable dans une balise img
  */
 export function generateDiceBearAvatar(seed: string): string {
-  const avatar = createAvatar(glass, {
-    seed: seed || 'unknown',
-  })
-  return avatar.toDataUri()
+  return seedAvatarDataUri(seed)
 }
 
 /**
@@ -51,8 +47,8 @@ export function generateDiceBearAvatar(seed: string): string {
  * ipfs://QmHash -> https://ipfs.io/ipfs/QmHash
  */
 export function convertIpfsToHttp(url: string): string {
-  if (!url.startsWith('ipfs://')) return url
-  const hash = url.replace('ipfs://', '')
+  if (!url.startsWith("ipfs://")) return url
+  const hash = url.replace("ipfs://", "")
   return `https://ipfs.io/ipfs/${hash}`
 }
 
@@ -61,9 +57,11 @@ export function convertIpfsToHttp(url: string): string {
  * - Convertit IPFS en HTTP
  * - Laisse les data URIs et HTTP(S) inchangés
  */
-export function normalizeAvatarUrl(url: string | undefined | null): string | undefined {
+export function normalizeAvatarUrl(
+  url: string | undefined | null
+): string | undefined {
   if (!url) return undefined
-  if (url.startsWith('ipfs://')) {
+  if (url.startsWith("ipfs://")) {
     return convertIpfsToHttp(url)
   }
   return url
@@ -74,8 +72,8 @@ export function normalizeAvatarUrl(url: string | undefined | null): string | und
  * Exemple: "vitalik.eth" → "V" / "0x1234..." → "0x"
  */
 export function getInitials(name: string | undefined | null): string {
-  if (!name) return '?'
-  if (isEthereumAddress(name)) return '0x'
+  if (!name) return "?"
+  if (isEthereumAddress(name)) return "0x"
   const parts = name.split(/[\s._-]+/)
   if (parts.length > 1) {
     return (parts[0][0] + parts[1][0]).toUpperCase()

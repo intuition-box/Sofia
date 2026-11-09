@@ -48,7 +48,6 @@ const PositionsPage = lazy(() => import('./pages/PositionsPage'))
 const VotePage = lazy(() => import('./pages/VotePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const ContextManagerPage = lazy(() => import('./pages/ContextManagerPage'))
-import { useViewAs } from './hooks/useViewAs'
 import { FEATURES } from './config/features'
 import './components/styles/design-system.css'
 import './components/styles/layout.css'
@@ -83,9 +82,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // While Privy restores the session, the account signed in last renders
   // from cache; Privy's answer then confirms it or redirects
   const { signedIn, provisional } = useAccountWallet()
-  const { isViewingAs } = useViewAs()
   if (provisional && !signedIn) return null
-  if (!signedIn && !isViewingAs) return <Navigate to="/explore" replace />
+  if (!signedIn) return <Navigate to="/explore" replace />
   return <>{children}</>
 }
 

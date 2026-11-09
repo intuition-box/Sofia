@@ -7,8 +7,15 @@ import { getStoredWalletAddress } from '../lib/utils/walletStorage'
 import { initAddToSofia } from "./addToSofia";
 import { configureSofiaGraphql } from "../lib/clients/graphql-client";
 import "./oauth/index"; // Initialize OAuth service
+import { offchainLookup } from "viem";
 
 const logger = createServiceLogger('ServiceWorker')
+
+// viem lazy-imports its CCIP helper on every reverted call, and an MV3 worker
+// can't load a chunk after startup (importScripts fails): the real error
+// ("not enough TRUST", a revert reason…) became "unknown error". Referencing
+// it here bundles it into the worker, so the lazy import resolves.
+void offchainLookup
 
 // Generated queries + atom pinning run here too (publish from the worker).
 configureSofiaGraphql()
@@ -16,6 +23,11 @@ configureSofiaGraphql()
 // Right-click "Add to Sofia" → modal → cart. Registers its context menu +
 // listeners synchronously at top level (Chrome requires this for SW events).
 initAddToSofia()
+
+// Message handlers too: a message that wakes the worker (the right-click modal
+// asking for the cart, atom search…) is dropped if no listener exists yet, so
+// they can't wait for init()'s awaits.
+setupMessageHandlers()
 
 // Exported function to initialize when wallet connects (called from messageHandlers)
 export async function initializeOnWalletConnect(): Promise<void> {
@@ -44,9 +56,6 @@ async function init(): Promise<void> {
     // Reads current wallet from chrome.storage.session and subscribes;
     // reconnects on wallet change via chrome.storage.onChanged.
     await initializeRealtime()
-
-    // Setup message handlers (has internal guard against duplicates)
-    setupMessageHandlers()
 
     // Check wallet connection
     const walletAddress = await getStoredWalletAddress()

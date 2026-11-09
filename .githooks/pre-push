@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Runs the same checks as CI before every push, so a red build is caught
+# on your machine first. Installed by `bun install` (the root `prepare`
+# script points git at this folder).
+#
+# Skip once, when you know what you are doing:  SKIP_CI_CHECK=1 git push
+
+set -euo pipefail
+
+if [ "${SKIP_CI_CHECK:-}" = "1" ]; then
+  echo "pre-push: SKIP_CI_CHECK=1, checks skipped"
+  exit 0
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "pre-push: syncing node_modules with bun.lock (same install as CI)"
+# A stale node_modules is the usual reason a check passes here and fails in
+# CI. --frozen-lockfile also fails when package.json changed without bun.lock.
+bun install --frozen-lockfile --silent
+
+echo "pre-push: running bun run ci (format, codegen, typecheck, tests)"
+if ! bun run ci; then
+  echo
+  echo "pre-push: checks failed, push stopped."
+  echo "  formatting only:  bun run format, then commit"
+  echo "  skip once:        SKIP_CI_CHECK=1 git push"
+  exit 1
+fi

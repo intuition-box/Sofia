@@ -1,0 +1,508 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"
+    />
+    <style>
+      /* Object board: every object of the film, modelled alone before any animation. */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 3840px;
+        height: 2400px;
+        background: radial-gradient(
+          ellipse 70% 60% at 50% 38%,
+          #ffffff 0%,
+          #f3f4f7 50%,
+          #e3e5eb 100%
+        );
+        font-family: 'Poppins', sans-serif;
+        color: #0b0b12;
+        position: relative;
+        overflow: hidden;
+      }
+      .lbl {
+        position: absolute;
+        font:
+          500 28px 'Inter',
+          sans-serif;
+        color: #8a8b95;
+      }
+
+      /* O1 window */
+      .win {
+        position: absolute;
+        width: 1440px;
+        height: 952px;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow:
+          0 0 0 1px rgba(10, 12, 30, 0.07),
+          0 2px 4px rgba(10, 12, 30, 0.05),
+          0 28px 60px -18px rgba(16, 18, 40, 0.26),
+          0 90px 160px -60px rgba(16, 18, 40, 0.32);
+      }
+      .win-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 52px;
+        background: linear-gradient(#f7f7f9, #eeeef2);
+        border-bottom: 1px solid #dcdce2;
+      }
+      .lights {
+        position: absolute;
+        left: 20px;
+        top: 19px;
+        display: flex;
+        gap: 8px;
+      }
+      .lights i {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        display: block;
+      }
+      .win-url {
+        position: absolute;
+        left: 420px;
+        top: 11px;
+        width: 600px;
+        height: 30px;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid #e1e1e6;
+        font:
+          500 16px/28px 'Inter',
+          sans-serif;
+        color: #3c3c43;
+        text-align: center;
+      }
+      .win-page {
+        position: absolute;
+        left: 0;
+        top: 52px;
+        width: 1440px;
+        height: 900px;
+      }
+      .sheen {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          105deg,
+          transparent 38%,
+          rgba(255, 255, 255, 0.55) 48%,
+          rgba(255, 255, 255, 0) 58%
+        );
+        mix-blend-mode: screen;
+      }
+
+      /* O2 context menu */
+      .menu {
+        position: absolute;
+        width: 360px;
+        padding: 6px;
+        border-radius: 12px;
+        background: rgba(246, 246, 248, 0.86);
+        backdrop-filter: blur(28px) saturate(1.6);
+        box-shadow:
+          0 0 0 0.5px rgba(0, 0, 0, 0.14),
+          0 10px 30px rgba(10, 12, 30, 0.22),
+          0 1px 0 rgba(255, 255, 255, 0.8) inset;
+        font:
+          500 28px 'Inter',
+          sans-serif;
+        color: #1d1d22;
+      }
+      .mi {
+        height: 50px;
+        padding: 0 14px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .mi.on {
+        background: #0a64ff;
+        color: #fff;
+      }
+      .mi b {
+        margin-left: auto;
+        font-weight: 500;
+        opacity: 0.55;
+      }
+      .mi img {
+        width: 30px;
+        height: 30px;
+      }
+      .msep {
+        height: 1px;
+        background: rgba(0, 0, 0, 0.1);
+        margin: 6px 10px;
+      }
+
+      /* O3 cursor */
+      .cursor {
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.28));
+      }
+
+      /* O4 toast */
+      .toast {
+        position: absolute;
+        height: 104px;
+        padding: 0 34px 0 22px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        background: #fff;
+        border-radius: 22px;
+        box-shadow:
+          0 0 0 1px rgba(10, 12, 30, 0.06),
+          0 18px 40px -12px rgba(16, 18, 40, 0.3);
+      }
+      .toast img {
+        width: 56px;
+        height: 56px;
+      }
+      .toast .t1 {
+        font-weight: 600;
+        font-size: 34px;
+        line-height: 1.1;
+      }
+      .toast .t2 {
+        font:
+          500 28px 'Inter',
+          sans-serif;
+        color: #6e6e78;
+      }
+
+      /* O5 page card (real data, Trending 7 days, 2026-11-09) */
+      .card {
+        position: absolute;
+        width: 1380px;
+        padding: 56px 64px 60px;
+        border-radius: 34px;
+        background: #13121f;
+        color: #f5f3ff;
+        overflow: hidden;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.09),
+          0 0 0 1px rgba(10, 12, 30, 0.25),
+          0 30px 70px -20px rgba(16, 18, 40, 0.45),
+          0 110px 180px -70px rgba(16, 18, 40, 0.5);
+        display: grid;
+        gap: 46px;
+      }
+      .card-top-light {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 220px;
+        background: radial-gradient(
+          ellipse 60% 100% at 30% 0%,
+          rgba(255, 255, 255, 0.07),
+          transparent 70%
+        );
+      }
+      .ch {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        position: relative;
+      }
+      .fav {
+        width: 116px;
+        height: 116px;
+        border-radius: 26px;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      .fav img {
+        width: 116px;
+        height: 116px;
+      }
+      .ct {
+        font-size: 76px;
+        font-weight: 700;
+        line-height: 1.04;
+        letter-spacing: -0.01em;
+      }
+      .mono {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 400;
+      }
+      .chost {
+        font-size: 34px;
+        color: #8f8ca8;
+      }
+      .ctag {
+        margin-left: auto;
+        align-self: flex-start;
+        font-size: 28px;
+        letter-spacing: 0.08em;
+        color: #22c55e;
+        background: rgba(34, 197, 94, 0.14);
+        padding: 6px 18px;
+        border-radius: 9px;
+      }
+      .stats {
+        display: flex;
+        gap: 100px;
+        position: relative;
+      }
+      .sv {
+        font-size: 80px;
+        font-weight: 700;
+        line-height: 1.04;
+      }
+      .sl {
+        font-size: 28px;
+        letter-spacing: 0.08em;
+        color: #8f8ca8;
+        margin-top: 6px;
+      }
+      .green {
+        color: #22c55e;
+      }
+      .first {
+        display: grid;
+        gap: 18px;
+        position: relative;
+      }
+      .frow {
+        display: flex;
+        gap: 52px;
+      }
+      .addr {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 34px;
+      }
+      .addr img {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+      }
+
+      /* O6 mini card for the field */
+      .mini {
+        position: absolute;
+        width: 420px;
+        height: 210px;
+        padding: 30px 32px;
+        border-radius: 24px;
+        background: #13121f;
+        color: #f5f3ff;
+        display: grid;
+        align-content: space-between;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          0 18px 40px -16px rgba(16, 18, 40, 0.4);
+      }
+      .mini .row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .mini img {
+        width: 64px;
+        height: 64px;
+        border-radius: 15px;
+      }
+      .mini .n {
+        font-size: 36px;
+        font-weight: 600;
+        line-height: 1.1;
+      }
+      .mini .s {
+        font-size: 28px;
+        color: #8f8ca8;
+      }
+      .mini.hl {
+        box-shadow:
+          0 0 0 4px #ffc6b0,
+          0 18px 40px -16px rgba(16, 18, 40, 0.4);
+      }
+
+      /* O7 lockup */
+      .lock {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+      }
+      .lock img {
+        width: 170px;
+        height: 170px;
+      }
+      .lock div {
+        font-size: 160px;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1;
+      }
+      .btn {
+        position: absolute;
+        height: 120px;
+        padding: 0 56px;
+        border-radius: 60px;
+        background: #0b0b12;
+        color: #fff;
+        font-size: 44px;
+        font-weight: 600;
+        display: grid;
+        place-items: center;
+      }
+
+      /* O8 headline type */
+      .h {
+        position: absolute;
+        font-size: 120px;
+        font-weight: 600;
+        letter-spacing: -0.035em;
+        line-height: 1.02;
+      }
+      .h em {
+        font-style: normal;
+        color: #b4b5bf;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="lbl" style="left: 80px; top: 40px">
+      O1 window · O2 menu · O3 cursor · O4 toast
+    </div>
+    <div class="win" style="left: 80px; top: 100px">
+      <img class="win-page" src="assets/v2/wiki-photography.png" alt="" />
+      <div class="win-bar">
+        <div class="lights">
+          <i style="background: #ff5f57"></i><i style="background: #febc2e"></i
+          ><i style="background: #28c840"></i>
+        </div>
+        <div class="win-url">en.wikipedia.org/wiki/Photography</div>
+      </div>
+      <div class="sheen"></div>
+      <div class="menu" style="left: 620px; top: 470px">
+        <div class="mi">Back</div>
+        <div class="mi">Reload</div>
+        <div class="msep"></div>
+        <div class="mi on">
+          <img src="assets/logo_invert.png" alt="" />Sofia<b>›</b>
+        </div>
+        <div class="mi">Inspect</div>
+      </div>
+      <div class="menu" style="left: 982px; top: 576px">
+        <div class="mi">Add to Sofia…</div>
+        <div class="mi on">Recommend</div>
+        <div class="mi">Recommend for…<b>›</b></div>
+        <div class="mi">Distrust</div>
+      </div>
+      <svg class="cursor" style="left: 1180px; top: 650px" viewBox="0 0 24 24">
+        <path
+          d="M4 2.5 L4 19.5 L8.6 15.3 L11.6 21.8 L14.4 20.6 L11.4 14.2 L17.6 14 Z"
+          fill="#000"
+          stroke="#fff"
+          stroke-width="1.3"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <div class="toast" style="left: 1000px; top: 90px">
+        <img src="assets/logo_invert.png" alt="" />
+        <div>
+          <div class="t1">Recommended</div>
+          <div class="t2">Photography</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lbl" style="left: 1640px; top: 40px">
+      O5 page card, real data
+    </div>
+    <div class="card" style="left: 1640px; top: 100px">
+      <div class="card-top-light"></div>
+      <div class="ch">
+        <div class="fav">
+          <img src="assets/v2/fav-photography.png" alt="" />
+        </div>
+        <div>
+          <div class="ct">Photography</div>
+          <div class="chost mono">en.wikipedia.org</div>
+        </div>
+        <div class="ctag mono">RECOMMEND</div>
+      </div>
+      <div class="stats">
+        <div>
+          <div class="sv green">+2</div>
+          <div class="sl mono">PEOPLE · 7D</div>
+        </div>
+        <div>
+          <div class="sv">50</div>
+          <div class="sl mono">SUPPORTERS</div>
+        </div>
+        <div>
+          <div class="sv">2.67 T</div>
+          <div class="sl mono">STAKED</div>
+        </div>
+      </div>
+      <div class="first">
+        <div class="sl mono">FIRST TO SIGNAL</div>
+        <div class="frow">
+          <div class="addr mono">
+            <img src="assets/v2/photo-avatar1.png" alt="" />0x6495...48Cb
+          </div>
+          <div class="addr mono">
+            <img src="assets/v2/photo-avatar2.png" alt="" />lonhwick.eth
+          </div>
+          <div class="addr mono">
+            <img src="assets/v2/photo-avatar3.png" alt="" />0xf500...6a19
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lbl" style="left: 80px; top: 1140px">
+      O6 field card · O7 lockup · O8 type
+    </div>
+    <div class="mini" style="left: 80px; top: 1200px">
+      <div class="row">
+        <img src="assets/v2/fav-notion.png" alt="" />
+        <div class="n">Notion</div>
+      </div>
+      <div class="s mono">100+ supporters</div>
+    </div>
+    <div class="mini hl" style="left: 540px; top: 1200px">
+      <div class="row">
+        <img src="assets/v2/fav-photography.png" alt="" />
+        <div class="n">Photography</div>
+      </div>
+      <div class="s mono">50 supporters</div>
+    </div>
+    <div class="lock" style="left: 80px; top: 1520px">
+      <img src="assets/logo_invert.png" alt="" />
+      <div>Sofia</div>
+    </div>
+    <div class="btn" style="left: 80px; top: 1760px">Add to Chrome</div>
+    <div class="h" style="left: 1640px; top: 1300px">
+      Some pages<br />are worth keeping.
+    </div>
+    <div class="h" style="left: 1640px; top: 1620px">
+      Right-click. <em>Recommend.</em>
+    </div>
+  </body>
+</html>

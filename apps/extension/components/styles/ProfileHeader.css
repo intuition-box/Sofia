@@ -93,7 +93,7 @@
   line-height: 1.15;
 }
 
-/* ========== META ROW (address + badge + signals + gold) ========== */
+/* ========== META ROW (address + badge + signals) ========== */
 .profile-meta-row {
   display: flex;
   flex-wrap: wrap;
@@ -140,19 +140,7 @@
   flex-shrink: 0;
 }
 
-.profile-meta-gold {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #000;
-  font-weight: 700;
-}
 
-.profile-meta-gold-icon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
 
 .profile-meta-streak {
   display: inline-flex;

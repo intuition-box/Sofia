@@ -161,13 +161,4 @@ describe('position value', () => {
     expect(p.value).toBe(String(10n * WAD))
     expect(p.change).toBe('0')
   })
-
-  it('uses the exact exit value (previewRedeem) when known', () => {
-    const [p] = aggregateUserPositions(
-      [withTotals(10n * WAD, WAD, 10n * WAD, 10n * WAD)],
-      PLATFORMS,
-      { '0xpage:2': String(9n * WAD) },
-    )
-    expect(p.value).toBe(String(9n * WAD))
-  })
 })

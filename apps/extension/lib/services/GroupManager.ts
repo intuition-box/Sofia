@@ -18,7 +18,6 @@ export type CertificationType = IntentionType
 
 export interface CertifyResult {
   success: boolean
-  goldGained: number
   error?: string
 }
 
@@ -142,20 +141,20 @@ class GroupManagerService {
   async certifyUrl(groupId: string, url: string, certification: CertificationType): Promise<CertifyResult> {
     const group = await IntentionGroupsService.getGroup(groupId)
     if (!group) {
-      return { success: false, goldGained: 0, error: 'Group not found' }
+      return { success: false, error: 'Group not found' }
     }
 
     const urlRecord = group.urls.find(u => u.url === url)
     if (!urlRecord) {
-      return { success: false, goldGained: 0, error: 'URL not found in group' }
+      return { success: false, error: 'URL not found in group' }
     }
 
     if (urlRecord.certification) {
-      return { success: false, goldGained: 0, error: 'URL already certified' }
+      return { success: false, error: 'URL already certified' }
     }
 
     if (urlRecord.removed) {
-      return { success: false, goldGained: 0, error: 'URL has been removed' }
+      return { success: false, error: 'URL has been removed' }
     }
 
     // Apply certification
@@ -175,7 +174,7 @@ class GroupManagerService {
 
     logger.info('Certified URL', { certification, groupId })
 
-    return { success: true, goldGained: 0 }
+    return { success: true }
   }
 
   /**

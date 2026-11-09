@@ -1158,9 +1158,6 @@
   background: #cd7f32;
 }
 
-.achievement-type-badge.gold {
-  background: linear-gradient(135deg, #ffd700, #daa520);
-}
 
 /* Card info area */
 .achievement-card-info {
@@ -1248,9 +1245,6 @@
   background: #cd7f32;
 }
 
-.achievement-xp.gold {
-  background: linear-gradient(135deg, #ffd700, #daa520);
-}
 
 /* Locked achievements */
 .achievement-card.locked {

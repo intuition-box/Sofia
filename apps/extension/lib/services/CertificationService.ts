@@ -32,7 +32,11 @@ import { atomService } from "./AtomService"
 import { BlockchainService } from "./blockchainService"
 import { cartService } from "./CartService"
 import { platformPoolService } from "./PlatformPoolService"
-import { tripleService, type ResolvedTriple } from "./TripleService"
+import {
+  TAG_CURVE_ID,
+  tripleService,
+  type ResolvedTriple
+} from "./TripleService"
 import { txEventBus } from "./TxEventBus"
 
 const logger = createServiceLogger("CertificationService")
@@ -454,7 +458,9 @@ class CertificationServiceClass {
       for (let k = 0; k < resolvedTriples.length; k += CONTEXT_TX_SIZE) {
         const part = await tripleService.createTriplesBatch(
           resolvedTriples.slice(k, k + CONTEXT_TX_SIZE),
-          wallet
+          wallet,
+          undefined,
+          TAG_CURVE_ID
         )
         merged.results.push(...part.results)
         merged.failedTriples.push(...part.failedTriples)

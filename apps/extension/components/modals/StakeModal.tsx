@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import { useBalance } from 'wagmi'
-import { formatUnits, getAddress } from 'viem'
-import SofiaLoader from '../ui/SofiaLoader'
-import XpAnimation from '../ui/XpAnimation'
-import { useWalletFromStorage } from '../../hooks'
-import { EXPLORER_URLS } from '../../lib/config/chainConfig'
-import { createHookLogger } from '../../lib/utils/logger'
-import { getTripleUrl } from '../../lib/utils'
-import '../styles/Modal.css'
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
+import { getAddress } from "viem"
 
-const logger = createHookLogger('StakeModal')
+import { useTrustBalance, useWalletFromStorage } from "../../hooks"
+import { EXPLORER_URLS } from "../../lib/config/chainConfig"
+import { getTripleUrl } from "../../lib/utils"
+import { createHookLogger } from "../../lib/utils/logger"
+import SofiaLoader from "../ui/SofiaLoader"
+import XpAnimation from "../ui/XpAnimation"
+
+import "../styles/Modal.css"
+
+const logger = createHookLogger("StakeModal")
 
 interface StakeModalProps {
   isOpen: boolean
@@ -18,9 +19,12 @@ interface StakeModalProps {
   predicateName: string
   objectName: string
   tripleId: string
-  defaultCurve?: 1 | 2           // Curve pré-sélectionnée (défaut: 2)
+  defaultCurve?: 1 | 2 // Curve pré-sélectionnée (défaut: 2)
   onClose: () => void
-  onSubmit: (amount: bigint, curveId: 1 | 2) => Promise<{ success: boolean, txHash?: string, error?: string }>
+  onSubmit: (
+    amount: bigint,
+    curveId: 1 | 2
+  ) => Promise<{ success: boolean; txHash?: string; error?: string }>
   isProcessing?: boolean
 }
 
@@ -36,7 +40,7 @@ const StakeModal = ({
   isProcessing = false
 }: StakeModalProps) => {
   const [selectedCurve, setSelectedCurve] = useState<1 | 2>(defaultCurve)
-  const [amount, setAmount] = useState('10')
+  const [amount, setAmount] = useState("10")
   const [transactionHash, setTransactionHash] = useState<string | null>(null)
   const [transactionError, setTransactionError] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -47,16 +51,9 @@ const StakeModal = ({
   // Get checksum address for GraphQL queries and balance
   const checksumAddress = walletAddress ? getAddress(walletAddress) : undefined
 
-  const { data: balanceData } = useBalance({
-    address: checksumAddress,
-  })
+  const userBalance = useTrustBalance(walletAddress)
 
-  // Parse balance to number (in TRUST)
-  const userBalance = balanceData
-    ? parseFloat(formatUnits(balanceData.value, balanceData.decimals))
-    : 0
-
-  logger.debug('Wallet info', {
+  logger.debug("Wallet info", {
     walletAddress,
     checksumAddress,
     authenticated,
@@ -67,15 +64,15 @@ const StakeModal = ({
 
   // Predefined amounts - Changed to 10, 25, 50, MAX
   const predefinedAmounts = [
-    { label: '10 TRUST', value: '10' },
-    { label: '25 TRUST', value: '25' },
-    { label: '50 TRUST', value: '50' },
-    { label: 'MAX', value: userBalance.toFixed(2) }
+    { label: "10 TRUST", value: "10" },
+    { label: "25 TRUST", value: "25" },
+    { label: "50 TRUST", value: "50" },
+    { label: "MAX", value: userBalance.toFixed(2) }
   ]
 
   useEffect(() => {
     if (isOpen) {
-      setAmount('10')
+      setAmount("10")
       setSelectedCurve(defaultCurve)
       setTransactionHash(null)
       setTransactionError(null)
@@ -106,21 +103,28 @@ const StakeModal = ({
       try {
         // Convert TRUST to Wei (1 TRUST = 10^18 Wei)
         const weiAmount = BigInt(Math.floor(numAmount * 1e18))
-        logger.info('Starting transaction', { amount: numAmount, weiAmount: weiAmount.toString() })
+        logger.info("Starting transaction", {
+          amount: numAmount,
+          weiAmount: weiAmount.toString()
+        })
         const result = await onSubmit(weiAmount, selectedCurve)
-        logger.info('Transaction result', result)
+        logger.info("Transaction result", result)
 
         if (result.success && result.txHash) {
-          logger.info('Transaction successful, setting txHash', { txHash: result.txHash })
+          logger.info("Transaction successful, setting txHash", {
+            txHash: result.txHash
+          })
           setTransactionHash(result.txHash)
           setIsSuccess(true)
         } else if (result.error) {
-          logger.error('Transaction error', result.error)
+          logger.error("Transaction error", result.error)
           setTransactionError(result.error)
         }
       } catch (error) {
-        logger.error('Transaction failed', error)
-        setTransactionError(error instanceof Error ? error.message : 'Transaction failed')
+        logger.error("Transaction failed", error)
+        setTransactionError(
+          error instanceof Error ? error.message : "Transaction failed"
+        )
       }
     }
   }
@@ -134,12 +138,14 @@ const StakeModal = ({
   // Parse error message to show only essential info
   const parseErrorMessage = (error: string): string => {
     // Extract "Shares addition failed:" or "Weight addition failed:"
-    const failedMatch = error.match(/(Shares addition failed|Weight addition failed):/i)
-    const failedText = failedMatch ? failedMatch[0] : 'Transaction failed:'
+    const failedMatch = error.match(
+      /(Shares addition failed|Weight addition failed):/i
+    )
+    const failedText = failedMatch ? failedMatch[0] : "Transaction failed:"
 
     // Extract "Details:" section
     const detailsMatch = error.match(/Details:\s*(.+?)(?:\n|$)/i)
-    const detailsText = detailsMatch ? `Details: ${detailsMatch[1]}` : ''
+    const detailsText = detailsMatch ? `Details: ${detailsMatch[1]}` : ""
 
     return detailsText ? `${failedText}\n${detailsText}` : failedText
   }
@@ -159,26 +165,25 @@ const StakeModal = ({
           <button
             className="modal-close"
             onClick={onClose}
-            disabled={isProcessing}
-          >
+            disabled={isProcessing}>
             ✕
           </button>
         </div>
 
         <div className="modal-body">
           <p className="modal-description">
-            Staking on a Triple enhances its discoverability in the Intuition system.
+            Staking on a Triple enhances its discoverability in the Intuition
+            system.
           </p>
 
           {/* Triple Display - WeightModal style */}
           <div
             className="modal-triplet-info clickable"
-            onClick={() => window.open(getTripleUrl(tripleId), '_blank')}
-            title="View on Intuition Portal"
-          >
+            onClick={() => window.open(getTripleUrl(tripleId), "_blank")}
+            title="View on Intuition Portal">
             <p>
-              <span className="subject">{subjectName}</span>{' '}
-              <span className="action">{predicateName}</span>{' '}
+              <span className="subject">{subjectName}</span>{" "}
+              <span className="action">{predicateName}</span>{" "}
               <span className="object">{objectName}</span>
             </p>
           </div>
@@ -206,13 +211,15 @@ const StakeModal = ({
               {/* Toggle switch integrated in input */}
               <div className="stake-input-toggle">
                 <span className="stake-toggle-label">
-                  {selectedCurve === 1 ? 'Linear' : 'Offset'}
+                  {selectedCurve === 1 ? "Linear" : "Offset"}
                 </span>
                 <label className="stake-toggle-switch">
                   <input
                     type="checkbox"
                     checked={selectedCurve === 1}
-                    onChange={() => setSelectedCurve(selectedCurve === 1 ? 2 : 1)}
+                    onChange={() =>
+                      setSelectedCurve(selectedCurve === 1 ? 2 : 1)
+                    }
                     disabled={isProcessing}
                   />
                   <span className="stake-toggle-slider"></span>
@@ -225,13 +232,12 @@ const StakeModal = ({
 
             {/* Amount Pills */}
             <div className="stake-amount-pills">
-              {predefinedAmounts.map(presetAmount => (
+              {predefinedAmounts.map((presetAmount) => (
                 <button
                   key={presetAmount.value}
                   onClick={() => handleAmountSelect(presetAmount.value)}
-                  className={`stake-amount-pill ${amount === presetAmount.value ? 'selected' : ''}`}
-                  disabled={isProcessing}
-                >
+                  className={`stake-amount-pill ${amount === presetAmount.value ? "selected" : ""}`}
+                  disabled={isProcessing}>
                   {presetAmount.label}
                 </button>
               ))}
@@ -248,8 +254,7 @@ const StakeModal = ({
                   href={`${EXPLORER_URLS.TRANSACTION}${transactionHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="modal-tx-link"
-                >
+                  className="modal-tx-link">
                   View on Explorer →
                 </a>
               </div>
@@ -262,7 +267,9 @@ const StakeModal = ({
               <div className="modal-error-icon">❌</div>
               <div className="modal-error-text">
                 <p className="modal-error-title">Transaction Failed</p>
-                <p className="modal-error-message">{parseErrorMessage(transactionError)}</p>
+                <p className="modal-error-message">
+                  {parseErrorMessage(transactionError)}
+                </p>
               </div>
             </div>
           )}
@@ -282,16 +289,14 @@ const StakeModal = ({
             <button
               onClick={onClose}
               disabled={isProcessing}
-              className="stake-btn stake-btn-cancel"
-            >
-              {(isSuccess || transactionError) ? 'Close' : 'Cancel'}
+              className="stake-btn stake-btn-cancel">
+              {isSuccess || transactionError ? "Close" : "Cancel"}
             </button>
             {!isProcessing && !isSuccess && !transactionError && (
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className="stake-btn stake-btn-submit"
-              >
+                className="stake-btn stake-btn-submit">
                 Stake
               </button>
             )}
@@ -299,8 +304,7 @@ const StakeModal = ({
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className="stake-btn stake-btn-submit"
-              >
+                className="stake-btn stake-btn-submit">
                 Retry
               </button>
             )}

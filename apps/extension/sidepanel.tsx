@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { WagmiProvider } from "wagmi"
 
 import "./components/styles/Global.css"
 
@@ -18,12 +17,11 @@ import OnboardingImportPage from "./components/pages/OnboardingImportPage"
 import SettingsPage from "./components/pages/SettingsPage"
 import UserProfilePage from "./components/pages/UserProfilePage"
 import { useWalletFromStorage } from "./hooks/useWalletFromStorage"
-import { FEATURES } from "./lib/config/features"
-import { wagmiConfig } from "./lib/config/wagmi"
 import { configureSofiaGraphql } from "./lib/clients/graphql-client"
-import { txEventBus } from "./lib/services"
+import { FEATURES } from "./lib/config/features"
 import { IntentionGroupsService } from "./lib/database/indexedDB-methods"
 import { QueryProvider } from "./lib/providers/queryProvider"
+import { txEventBus } from "./lib/services"
 
 // Configure GraphQL client BEFORE the QueryProvider mounts.
 configureSofiaGraphql()
@@ -143,11 +141,9 @@ const SidePanelContent = () => {
 function SidePanel() {
   return (
     <QueryProvider>
-      <WagmiProvider config={wagmiConfig}>
-        <RouterProvider initialPage="home">
-          <SidePanelContent />
-        </RouterProvider>
-      </WagmiProvider>
+      <RouterProvider initialPage="home">
+        <SidePanelContent />
+      </RouterProvider>
     </QueryProvider>
   )
 }

@@ -54,7 +54,3 @@ I ──recommends──▶ <page atom>          curve 2 (progressive)
 - Minimum deposit: **0.01 TRUST** (below: `MultiVault_DepositBelowMinimumDeposit`). After fees a 0.01 deposit lands as ~0.0097–0.0099, hence missions count from 0.009.
 - Extension quick publish (right-click with a session): 0.5 TRUST. Cart presets: 0.01 / 0.5 / 1 TRUST.
 - Batches: 35 creations / 80 deposits per transaction (~32M gas cap per transaction on Intuition).
-
-## Known inconsistencies
-
-- Tags created by the **extension** go through `TripleService.createTriplesBatch`, which creates on curve 2; the explorer and the relayer create tags on curve 1.

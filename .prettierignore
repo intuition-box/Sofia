@@ -27,3 +27,9 @@ apps/landing/Sofia Landing 2/
 # blog's truncate plugin). Prettier's markdown parser rewrites `*` → `_`, which
 # breaks the marker. Keep the posts intact — they're not plain markdown.
 apps/blog/src/content/posts/
+
+# vendored agent skills (installed with `npx skills add`)
+.agents/skills/
+
+# Google Search Console verification files: must stay byte-exact
+**/public/google*.html
